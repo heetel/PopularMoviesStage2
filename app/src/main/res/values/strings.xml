@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">PopularMovies</string>
+    <string name="popular">Popular</string>
+    <string name="top_rated">Top rated</string>
+    <string name="refresh">Refresh</string>
+    <string name="original_title">Original title</string>
+    <string name="vote_average">Vote average</string>
+    <string name="release_date">Release date</string>
+    <string name="overview">Overview</string>
+    <string name="average_vote" translatable="false"></string>
+    <string name="no_connection">No internet connection</string>
+    <string name="try_again">Try again</string>
+    <string name="request_internet_connection">Please connect to the internet.</string>
+    <string name="thumbnail">Cover image</string>
+    <string name="title">Title</string>
+</resources>

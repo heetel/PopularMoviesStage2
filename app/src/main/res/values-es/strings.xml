@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PopularMovies</string>
+    <string name="original_title">titulo original</string>
+    <string name="overview">General</string>
+    <string name="popular">Popular</string>
+    <string name="top_rated">Mejor Valoradas</string>
+    <string name="refresh">Recargar</string>
+    <string name="release_date">Fecha de lanzamiento</string>
+    <string name="vote_average">Valoración</string>
+    <string name="no_connection">Sin conexión a Internet</string>
+    <string name="try_again">Inténtalo de nuevo</string>
+    <string name="request_internet_connection">Por favor conectarse a Internet.</string>
+    <string name="thumbnail">Imagen de portada</string>
+    <string name="title">Titulo</string>
+</resources>

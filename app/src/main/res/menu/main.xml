@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_filter"
+        android:title="@string/popular"
+        android:orderInCategory="1"
+        app:showAsAction="ifRoom"/>
+    <!--android:icon="@drawable/ic_action_filter"-->
+
+    <item
+        android:id="@+id/action_refresh"
+        android:title="@string/refresh"
+        android:orderInCategory="2"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_load_from_network"
+        android:title="Load from Network"
+        android:orderInCategory="3"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_load_from_db"
+        android:title="Load from DB"
+        android:orderInCategory="4"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_clear_db"
+        android:title="Clear DB"
+        android:orderInCategory="5"
+        app:showAsAction="never"/>
+
+</menu>
