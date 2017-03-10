@@ -54,7 +54,7 @@ public class NetworkUtils {
     private static String active_url = THEMOVIEDB_BASE_URL_POPULAR;
 
     private final static String PARAM_API = "api_key";
-    private final static String API = "1de56c3d596be90580d20262de5d3bdd";//insert your API Key here.
+    private final static String API = "";//insert your API Key here.
     private final static String LANGUAGE_KEY = "language";
     private final static String PAGE_KEY = "page";
 

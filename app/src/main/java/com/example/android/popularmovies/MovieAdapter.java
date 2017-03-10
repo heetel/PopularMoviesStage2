@@ -159,14 +159,14 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
     }
 
     public void setMovies(Cursor cursor) {
+        mCursor = cursor;
 
         if (cursor != null) {
-            mCursor = cursor;
             mNumberItems = cursor.getCount();
-
-            notifyDataSetChanged();
+        } else {
+            mNumberItems = 0;
         }
 
-
+        notifyDataSetChanged();
     }
 }

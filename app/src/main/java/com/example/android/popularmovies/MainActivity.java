@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity
 
     private void loadFromDB() {
         Log.i(TAG, "loadFromDB called");
-        getSupportLoaderManager().initLoader(MOVIE_FROM_DB_LOADER_ID, null, this);
+        getSupportLoaderManager().restartLoader(MOVIE_FROM_DB_LOADER_ID, null, this);
     }
 
     private void loadFromNetwork() {
@@ -130,6 +130,7 @@ public class MainActivity extends AppCompatActivity
             showPopup();
         } else if (item.getItemId() == R.id.action_clear_db) {
             int rows = getContentResolver().delete(MovieContract.MovieEntry.CONTENT_URI, null, null);
+            mAdapter.setMovies(null);
             Log.i(TAG, rows + " rows deleted");
         } else if (item.getItemId() == R.id.action_load_from_network) {
             loadFromNetwork();
@@ -226,6 +227,8 @@ public class MainActivity extends AppCompatActivity
         pbLoadingIndicator.setVisibility(View.INVISIBLE);
 
         mAdapter.setMovies(data);
+
+        loader.commitContentChanged();
     }
 
     @Override
