@@ -84,15 +84,29 @@ public class DetailActivity extends AppCompatActivity {
         cursor.moveToPosition(mIndex);
 
         String title = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_TITLE));
+        String releaseDate = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_RELEASE_DATE));
+        String vote = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_VOTE_AVERAGE));
+        String originalTitle = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_ORIGINAL_TITLE));
         String backdropPath = cursor.getString(
                 cursor.getColumnIndex(MovieEntry.COLUMN_BACKDROP_PATH));
+        String posterPath = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_POSTER_PATH));
+        String overview = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_OVERVIEW));
 
         mDataBinding.textViewTitle.setText(title);
+        mDataBinding.originalTitle.setText(originalTitle);
+        mDataBinding.vote.setText(vote);
+        mDataBinding.date.setText(releaseDate);
+        mDataBinding.overview.setText(overview);
 
         Picasso.with(this).load(
                 "https://image.tmdb.org/t/p/w500" +
                         backdropPath)
                 .into(mDataBinding.imageViewBackdrop);
+
+        Picasso.with(this).load(
+                "https://image.tmdb.org/t/p/w500" +
+                        posterPath)
+                .into(mDataBinding.imageViewPoster);
 
 //        Log.i(TAG, backdropPath);
         scaleBackdrop();
