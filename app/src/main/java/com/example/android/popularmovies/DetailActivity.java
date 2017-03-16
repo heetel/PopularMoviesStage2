@@ -1,38 +1,41 @@
 package com.example.android.popularmovies;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.databinding.DataBindingUtil;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
 
+import com.example.android.popularmovies.data.MovieContract.MovieEntry;
+import com.example.android.popularmovies.databinding.ActivityDetailBinding;
 import com.squareup.picasso.Picasso;
 
 public class DetailActivity extends AppCompatActivity {
 
     private final static String TAG = DetailActivity.class.getSimpleName();
 
-    public final static String MOVIE_TITLE = "movie_title";
-    public final static String MOVIE_VOTE_AVERAGE = "movie_vote_average";
-    public final static String MOVIE_OVERVIEW = "movie_overview";
-    public final static String MOVIE_RELEASE_DATE = "movie_release_date";
-    public final static String MOVIE_POSTER_PATH = "movie_poster_path";
-    public final static String MOVIE_ORIGINAL_TITLE = "movie_original_title";
+    public static final String INDEX_KEY = "index_key";
+//    public final static String MOVIE_TITLE = "movie_title";
+//    public final static String MOVIE_VOTE_AVERAGE = "movie_vote_average";
+//    public final static String MOVIE_OVERVIEW = "movie_overview";
+//    public final static String MOVIE_RELEASE_DATE = "movie_release_date";
+//    public final static String MOVIE_POSTER_PATH = "movie_poster_path";
+//    public final static String MOVIE_ORIGINAL_TITLE = "movie_original_title";
 
+    private static int mIndex;
 
-    ImageView ivThumbnail;
-    TextView tvMovieTitle, tvMovieVoteAverage, tvMovieReleaseDate, tvMovieOverview, tvOriginalTitle;
+    ActivityDetailBinding mDataBinding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_detail);
+        mDataBinding = DataBindingUtil.setContentView(this, R.layout.activity_detail);
 
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -40,54 +43,90 @@ public class DetailActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        loadDataFromIntent();
-        adjustThumbnailSize();
+        loadDataFromDB();
+//        adjustThumbnailSize();
 
-        ScrollView scrollView = (ScrollView) findViewById(R.id.d_scrollview);
-        scrollView.smoothScrollTo(0,0);
+//        ScrollView scrollView = (ScrollView) findViewById(R.id.d_scrollview);
+//        scrollView.smoothScrollTo(0,0);
     }
 
-    private void loadDataFromIntent() {
+    private void loadDataFromDB() {
         Intent intent = getIntent();
+        if (!intent.hasExtra(INDEX_KEY))
+            return;
+        mIndex = intent.getIntExtra(INDEX_KEY, 0);
 
-        tvMovieTitle = (TextView) findViewById(R.id.d_tv_movie_title);
-        tvMovieVoteAverage = (TextView) findViewById(R.id.d_tv_vote_average);
-        tvMovieReleaseDate = (TextView) findViewById(R.id.d_tv_release_date);
-        tvMovieOverview = (TextView) findViewById(R.id.d_tv_movie_overview);
-        tvOriginalTitle = (TextView) findViewById(R.id.d_tv_original_title);
-        ivThumbnail = (ImageView) findViewById(R.id.d_iv_thumbnail);
+        new MovieTask().execute();
+    }
 
-        if (intent.hasExtra(MOVIE_TITLE))
-            tvMovieTitle.setText(intent.getStringExtra(MOVIE_TITLE));
-        if (intent.hasExtra(MOVIE_VOTE_AVERAGE))
-            tvMovieVoteAverage.setText(intent.getStringExtra(MOVIE_VOTE_AVERAGE));
-        if (intent.hasExtra(MOVIE_RELEASE_DATE))
-            tvMovieReleaseDate.setText(intent.getStringExtra(MOVIE_RELEASE_DATE));
-        if (intent.hasExtra(MOVIE_OVERVIEW))
-            tvMovieOverview.setText(intent.getStringExtra(MOVIE_OVERVIEW));
-        if (intent.hasExtra(MOVIE_ORIGINAL_TITLE))
-            tvOriginalTitle.setText(intent.getStringExtra(MOVIE_ORIGINAL_TITLE));
-        if (intent.hasExtra(MOVIE_POSTER_PATH)) {
-            Picasso.with(DetailActivity.this).load(
-                    "https://image.tmdb.org/t/p/w500" +
-                            intent.getStringExtra(MOVIE_POSTER_PATH))
-                    .into(ivThumbnail);
+    private class MovieTask extends AsyncTask<Uri, Void, Cursor> {
+
+        @Override
+        protected Cursor doInBackground(Uri... params) {
+            Log.i(TAG, "background: " + params.length);
+            return getContentResolver().query(
+                    MovieEntry.CONTENT_URI,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+
+        }
+
+        @Override
+        protected void onPostExecute(Cursor cursor) {
+            updateUI(cursor);
         }
     }
 
-    private void adjustThumbnailSize() {
-        RelativeLayout rlThumbnail = (RelativeLayout) findViewById(R.id.layout_thumbnail);
-        ViewGroup.LayoutParams layoutParams = rlThumbnail.getLayoutParams();
+    private void updateUI(Cursor cursor) {
+        cursor.moveToPosition(mIndex);
+
+        String title = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_TITLE));
+        String backdropPath = cursor.getString(
+                cursor.getColumnIndex(MovieEntry.COLUMN_BACKDROP_PATH));
+
+        mDataBinding.textViewTitle.setText(title);
+
+        Picasso.with(this).load(
+                "https://image.tmdb.org/t/p/w500" +
+                        backdropPath)
+                .into(mDataBinding.imageViewBackdrop);
+
+//        Log.i(TAG, backdropPath);
+        scaleBackdrop();
+    }
+
+    private void scaleBackdrop() {
+
+        ViewGroup.LayoutParams params = mDataBinding.frameLayoutBackdrop.getLayoutParams();
+
         DisplayMetrics displaymetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
-        int displayWidth = displaymetrics.widthPixels;
-        ViewGroup.LayoutParams params = ivThumbnail.getLayoutParams();
-        Log.i(TAG, "thumbnail: " + params.width + "x" + layoutParams.height);
-        params.width = displayWidth / 2;
-        layoutParams.height = (int) ((displayWidth / 2) * 1.45);
-        ivThumbnail.setLayoutParams(params);
-        rlThumbnail.setLayoutParams(layoutParams);
+        int width = displaymetrics.widthPixels;
+        Log.i(TAG, "width = " + width);
+        int height = ((int) (width * 0.562));
+        params.height = height;
+        Log.i(TAG, "height = " + height);
+
+        mDataBinding.frameLayoutBackdrop.setLayoutParams(params);
+
     }
+
+//    private void adjustThumbnailSize() {
+//        RelativeLayout rlThumbnail = (RelativeLayout) findViewById(R.id.layout_thumbnail);
+//        ViewGroup.LayoutParams layoutParams = rlThumbnail.getLayoutParams();
+//        DisplayMetrics displaymetrics = new DisplayMetrics();
+//        getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+//        int displayWidth = displaymetrics.widthPixels;
+//        ViewGroup.LayoutParams params = ivThumbnail.getLayoutParams();
+//        Log.i(TAG, "thumbnail: " + params.width + "x" + layoutParams.height);
+//        params.width = displayWidth / 2;
+//        layoutParams.height = (int) ((displayWidth / 2) * 1.45);
+//        ivThumbnail.setLayoutParams(params);
+//        rlThumbnail.setLayoutParams(layoutParams);
+//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

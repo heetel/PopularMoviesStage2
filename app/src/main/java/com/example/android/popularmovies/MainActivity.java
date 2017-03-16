@@ -3,12 +3,13 @@ package com.example.android.popularmovies;
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -24,21 +25,20 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import com.example.android.popularmovies.data.MovieContract;
-import com.example.android.popularmovies.utilities.NetworkLoader;
+import com.example.android.popularmovies.utilities.ListUtil;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 
+import java.net.URL;
 import java.util.ArrayList;
 
 /**
  * API-Key:
  */
 public class MainActivity extends AppCompatActivity
-        implements MovieAdapter.ListItemCallbackListener, LoaderManager.LoaderCallbacks<Cursor>,
-                    NetworkLoader.CallbackListener {
+        implements MovieAdapter.ListItemCallbackListener,
+        LoaderManager.LoaderCallbacks<ArrayList<ContentValues>> {
 
     private final String TAG = MainActivity.class.getSimpleName();
-
-    private final int MOVIE_FROM_DB_LOADER_ID = 220;
 
     private RecyclerView rvMovies;
     private ProgressBar pbLoadingIndicator;
@@ -48,8 +48,16 @@ public class MainActivity extends AppCompatActivity
     private Context mContext;
 
     private static int page = 1;
+    private static int NETWORK_LOADER_ID = 221;
+    private static final String PAGE_KEY = "page-key";
 
     private static final int NUM_LIST_ITEMS = 20;
+    private static final int RESULTS_PER_PAGE = 20;
+
+    private static final int CODE_POPULAR = 1231;
+    private static final int CODE_TOP_RATED = 1232;
+    private static final int CODE_FAVOURITES = 1233;
+    private static int sActiveTable = CODE_POPULAR;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +80,7 @@ public class MainActivity extends AppCompatActivity
 
         mContext = this;
 
-        loadFromNetwork();
+        loadFromDB();
     }
 
     @Override
@@ -81,6 +89,13 @@ public class MainActivity extends AppCompatActivity
 
         Context context = MainActivity.this;
         Intent intent = new Intent(context, DetailActivity.class);
+
+//        intent.putExtra(DetailActivity._ID, clickedItemIndex);
+
+        switch (sActiveTable) {
+            case CODE_POPULAR:
+                intent.putExtra(DetailActivity.INDEX_KEY, clickedItemIndex);
+        }
 
         startActivity(intent);
     }
@@ -91,7 +106,7 @@ public class MainActivity extends AppCompatActivity
      */
     @Override
     public void onLoadMore() {
-        page ++;
+//        page ++;
         loadFromNetwork();
     }
 
@@ -99,11 +114,27 @@ public class MainActivity extends AppCompatActivity
 
     private void loadFromDB() {
         Log.i(TAG, "loadFromDB called");
-        getSupportLoaderManager().restartLoader(MOVIE_FROM_DB_LOADER_ID, null, this);
+//        getSupportLoaderManager().restartLoader(MOVIE_FROM_DB_LOADER_ID, null, this);
+        new MovieFromDBTask().execute();
     }
 
     private void loadFromNetwork() {
-        new NetworkLoader(this, getSupportLoaderManager(), page);
+        //TODO Check if online
+
+//        //load data from DB to update the page number
+//        loadFromDB();
+
+        //Put page into Bundle
+        Bundle bundle = new Bundle();
+        bundle.putInt(PAGE_KEY, page);
+
+        //Initialize/start Loader
+        Loader<Integer> movieLoader = getSupportLoaderManager().getLoader(NETWORK_LOADER_ID);
+        if (movieLoader == null) {
+            getSupportLoaderManager().initLoader(NETWORK_LOADER_ID, bundle, this);
+        } else {
+            getSupportLoaderManager().restartLoader(NETWORK_LOADER_ID, bundle, this);
+        }
     }
 
     @Override
@@ -131,6 +162,7 @@ public class MainActivity extends AppCompatActivity
         } else if (item.getItemId() == R.id.action_clear_db) {
             int rows = getContentResolver().delete(MovieContract.MovieEntry.CONTENT_URI, null, null);
             mAdapter.setMovies(null);
+            page = 1;
             Log.i(TAG, rows + " rows deleted");
         } else if (item.getItemId() == R.id.action_load_from_network) {
             loadFromNetwork();
@@ -155,7 +187,8 @@ public class MainActivity extends AppCompatActivity
                     miFilter.setTitle(popular);
                     NetworkUtils.setPopular();
                     page = 1;
-                    mMovies = null;
+//                    mMovies = null;
+                    sActiveTable = CODE_POPULAR;
                     loadFromDB();
                     rvMovies.scrollToPosition(0);
                 } else if (menuItem.getItemId() == R.id.action_top_rated) {
@@ -166,6 +199,7 @@ public class MainActivity extends AppCompatActivity
                     NetworkUtils.setTopRated();
                     page = 1;
                     mMovies = null;
+                    sActiveTable = CODE_TOP_RATED;
                     loadFromDB();
                     rvMovies.scrollToPosition(0);
                 }
@@ -196,51 +230,132 @@ public class MainActivity extends AppCompatActivity
                 }).show();
     }
 
+
     @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new AsyncTaskLoader<Cursor>(this) {
+    public Loader<ArrayList<ContentValues>> onCreateLoader(int id, final Bundle args) {
+        return new AsyncTaskLoader<ArrayList<ContentValues>>(mContext) {
+
+            //Cached data
+            ArrayList<ContentValues> cachedMovies;
 
             @Override
             protected void onStartLoading() {
-                Log.i(TAG, "onStartLoading");
-                pbLoadingIndicator.setVisibility(View.VISIBLE);
-                forceLoad();
+                if (args == null)
+                    return;
+
+                if (cachedMovies != null) {
+                    deliverResult(cachedMovies);
+                } else {
+                    pbLoadingIndicator.setVisibility(View.VISIBLE);
+                    forceLoad();
+                }
             }
 
             @Override
-            public Cursor loadInBackground() {
-                Log.i(TAG, "loadInBackground");
-                return getContentResolver().query(
-                        MovieContract.MovieEntry.CONTENT_URI,
-                        null,
-                        null,
-                        null,
-                        null
-                );
+            public ArrayList<ContentValues> loadInBackground() {
+                //check for page number
+                if (!args.containsKey(PAGE_KEY))
+                    return null;
+
+                int page = args.getInt(PAGE_KEY);
+
+                //build URL and get Response
+                URL movieRequestUrl = NetworkUtils.buildUrl(page);
+                try {
+                    return NetworkUtils.getMoviesFromHttpUrl(mContext, movieRequestUrl);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+
+            @Override
+            public void deliverResult(ArrayList<ContentValues> data) {
+                cachedMovies = data;
+                super.deliverResult(data);
             }
         };
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Log.i(TAG, "onLoadFinished, Cursor: " + data.getCount());// Count is same as before until App relaunch
-        pbLoadingIndicator.setVisibility(View.INVISIBLE);
+    public void onLoadFinished(Loader<ArrayList<ContentValues>> loader, ArrayList<ContentValues> movies) {
+    pbLoadingIndicator.setVisibility(View.INVISIBLE);
 
-        mAdapter.setMovies(data);
+        if (movies != null) {
+            //bulkInsert movies to DB
+            ContentValues[] contentValues = ListUtil.makeContentValuesArray(movies);
+            int rowsInserted = 0;
+            switch (sActiveTable) {
+                case CODE_POPULAR:
+                    rowsInserted = mContext.getContentResolver()
+                            .bulkInsert(MovieContract.MovieEntry.CONTENT_URI, contentValues);
+                    break;
+                case CODE_TOP_RATED:
+                    rowsInserted = mContext.getContentResolver().bulkInsert(
+                            MovieContract.MovieEntry.CONTENT_URI_TOP_RATED, contentValues);
+                    break;
+            }
 
-        loader.commitContentChanged();
+            Log.i(TAG, rowsInserted + " rows inserted to DB.");
+
+            //update the UI
+            loadFromDB();
+        }
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
+    public void onLoaderReset(Loader<ArrayList<ContentValues>> loader) {
+
     }
 
-    /**
-     * This Callback method is called when the Networkloader finished.
-     */
-    @Override
-    public void onLoadingFinished() {
-        //Refresh UI by loading data from DB
-        loadFromDB();
+    public class MovieFromDBTask extends AsyncTask<Uri, Void, Cursor> {
+
+        @Override
+        protected void onPreExecute() {
+            pbLoadingIndicator.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected Cursor doInBackground(Uri... params) {
+            switch (sActiveTable) {
+                case CODE_POPULAR:
+                    return getContentResolver().query(
+                            MovieContract.MovieEntry.CONTENT_URI,
+                            null,
+                            null,
+                            null,
+                            null
+                    );
+                case CODE_TOP_RATED:
+                    return getContentResolver().query(
+                            MovieContract.MovieEntry.CONTENT_URI_TOP_RATED,
+                            null,
+                            null,
+                            null,
+                            null
+                    );
+                case CODE_FAVOURITES:
+                    //TODO implement favourites
+                    return null;
+                default:
+                    return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Cursor cursor) {
+            pbLoadingIndicator.setVisibility(View.INVISIBLE);
+            mAdapter.setMovies(cursor);
+            if (cursor!= null) {
+                page = (cursor.getCount() / RESULTS_PER_PAGE);
+                page++;
+                Log.i(TAG, "page updated to " + page);
+
+                if (page == 1) {
+                    //DB is still empty
+                    loadFromNetwork();
+                }
+            }
+        }
     }
 }

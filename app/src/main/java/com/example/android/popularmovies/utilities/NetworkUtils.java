@@ -18,6 +18,7 @@ package com.example.android.popularmovies.utilities;
 import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.example.android.popularmovies.data.MovieContract.MovieEntry;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -76,6 +78,10 @@ public class NetworkUtils {
      * @return The URL to use to query the movie server.
      */
     public static URL buildUrl(int page) {
+
+        if (TextUtils.isEmpty(API))
+            return null;
+
         String language = Locale.getDefault().getLanguage();
         Log.i("lang: ", language);
         Uri builtUri = Uri.parse(active_url).buildUpon()

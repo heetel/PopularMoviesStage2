@@ -1,148 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_detail"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/colorBackground"
-    tools:context="com.example.android.popularmovies.DetailActivity">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <ScrollView
-        android:id="@+id/d_scrollview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scrollbarSize="3dp"
-        android:scrollbarThumbVertical="@android:color/darker_gray">
+        android:layout_height="match_parent">
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp">
+            android:background="@color/colorBackground"
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/d_tv_movie_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/title"
-                android:textColor="@android:color/primary_text_dark"
-                android:textSize="42sp" />
-
-
-            <android.support.v7.widget.CardView
-                android:id="@+id/cv_thumbnail"
-                style="@style/CardView.Dark"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_below="@id/d_tv_movie_title"
-                android:layout_marginTop="16dp">
+                android:layout_height="wrap_content">
 
-                <RelativeLayout
-                    android:id="@+id/layout_thumbnail"
+                <FrameLayout
+                    android:id="@+id/frameLayoutBackdrop"
                     android:layout_width="match_parent"
-                    android:layout_height="200dp">
+                    android:layout_height="250dp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
 
                     <ImageView
-                        android:id="@+id/d_iv_thumbnail"
-                        android:layout_width="200dp"
-                        android:layout_height="300dp"
-                        android:scaleType="centerCrop"
-                        android:contentDescription="@string/thumbnail"/>
+                        android:id="@+id/imageViewBackdrop"
+                        android:layout_width="match_parent"
+                        android:layout_height="250dp"
+                        android:scaleType="fitStart"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintRight_toRightOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </FrameLayout>
 
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_alignParentBottom="true"
-                        android:layout_toEndOf="@id/d_iv_thumbnail"
-                        android:gravity="bottom"
-                        android:orientation="vertical">
+                <TextView
+                    android:id="@+id/textViewTitle"
+                    style="@style/TvTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/frameLayoutBackdrop"
+                    android:padding="8dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/frameLayoutBackdrop"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    tools:text="Title" />
 
-                        <TextView
-                            style="@style/TvHint"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/original_title" />
+            </RelativeLayout>
 
-                        <TextView
-                            android:id="@+id/d_tv_original_title"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="sans-serif-condensed"
-                            android:paddingStart="12dp"
-                            android:paddingEnd="12dp"
-                            android:textColor="@android:color/primary_text_dark"
-                            android:textSize="20sp" />
-
-                        <TextView
-                            style="@style/TvHint"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/vote_average" />
-
-                        <TextView
-                            android:id="@+id/d_tv_vote_average"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:paddingStart="12dp"
-                            android:paddingEnd="12dp"
-                            android:textColor="@android:color/primary_text_dark"
-                            android:textSize="22sp" />
-
-                        <TextView
-                            style="@style/TvHint"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/release_date" />
-
-                        <TextView
-                            android:id="@+id/d_tv_release_date"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:paddingBottom="12dp"
-                            android:paddingStart="12dp"
-                            android:paddingEnd="12dp"
-                            android:textColor="@android:color/primary_text_dark"
-                            android:textSize="18sp" />
-
-                    </LinearLayout>
-
-                </RelativeLayout>
-
-            </android.support.v7.widget.CardView>
-
-            <android.support.v7.widget.CardView
-                style="@style/CardView.Dark"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/cv_thumbnail"
-                android:layout_marginTop="16dp">
+                android:layout_height="wrap_content">
 
-                <LinearLayout
+                <ImageView
+                    android:id="@+id/imageViewPoster"
+                    android:layout_width="160dp"
+                    android:layout_height="240dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginTop="24dp"
+                    app:srcCompat="@color/cardview_dark_background" />
+
+                <TextView
+                    android:id="@+id/date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    tools:text="2001-09-09"
+                    style="@style/TvContent"
+                    android:layout_toRightOf="@+id/imageViewPoster"
+                    android:layout_alignBottom="@+id/imageViewPoster"/>
 
-                    <TextView
-                        style="@style/TvHint"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/overview"
-                        android:textSize="22sp"/>
+                <TextView
+                    android:id="@+id/dateLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/release_date"
+                    style="@style/TvLabel"
+                    android:layout_above="@id/date"
+                    android:layout_alignStart="@+id/date"/>
 
-                    <TextView
-                        android:id="@+id/d_tv_movie_overview"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:padding="8dp"
-                        android:textColor="@android:color/primary_text_dark"
-                        android:textIsSelectable="true"
-                        android:textSize="18sp" />
+                <TextView
+                    android:id="@+id/vote"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="7.8"
+                    style="@style/TvContent"
+                    android:layout_above="@+id/dateLabel"
+                    android:layout_alignStart="@+id/date"/>
 
-                </LinearLayout>
+                <TextView
+                    android:id="@+id/voteLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/vote_average"
+                    style="@style/TvLabel"
+                    android:layout_above="@id/vote"
+                    android:layout_alignStart="@+id/date"/>
 
-            </android.support.v7.widget.CardView>
 
-        </RelativeLayout>
+
+            </RelativeLayout>
+
+        </LinearLayout>
 
     </ScrollView>
 
-</RelativeLayout>
+</layout>

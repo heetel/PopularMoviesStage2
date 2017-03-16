@@ -17,11 +17,24 @@
 
 
     <!--Style for the TextViews on the DetailActivity like "Overview", "Release date"-->
-    <style name="TvHint">
+    <style name="TvLabel">
         <item name="android:textSize">16sp</item>
-        <item name="android:textColor">@color/mColorHint</item>
+        <item name="android:textColor">@color/mColorLabel</item>
         <item name="android:paddingLeft">12dp</item>
         <item name="android:paddingTop">12dp</item>
+    </style>
+
+    <style name="TvContent">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@android:color/primary_text_dark</item>
+        <item name="android:paddingLeft">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+    </style>
+
+    <style name="TvTitle">
+        <item name="android:textSize">28sp</item>
+        <item name="android:textColor">@android:color/primary_text_dark</item>
+        <item name="android:background">@color/colorTitleBackground</item>
     </style>
 
 </resources>

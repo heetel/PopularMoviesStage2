@@ -24,6 +24,9 @@ public class MovieContentProvider extends ContentProvider {
     public static final int MOVIES = 100;
     public static final int MOVIES_WITH_ID = 101;
 
+    public static final int TOP_RATED = 200;
+    public static final int TOP_RATED_WITH_ID = 201;
+
     private static final UriMatcher sUriMatcher = buildUriMatcher();
 
     public static UriMatcher buildUriMatcher() {
@@ -34,6 +37,11 @@ public class MovieContentProvider extends ContentProvider {
 
         //add Uri for one specific movie
         uriMatcher.addURI(MovieContract.AUTHORITY, MovieContract.PATH_MOVIES + "/#", MOVIES_WITH_ID);
+
+        uriMatcher.addURI(MovieContract.AUTHORITY, MovieContract.PATH_TOP_RATED, TOP_RATED);
+
+        uriMatcher.addURI(
+                MovieContract.AUTHORITY, MovieContract.PATH_TOP_RATED + "/#", TOP_RATED_WITH_ID);
 
         return uriMatcher;
     }
@@ -68,9 +76,10 @@ public class MovieContentProvider extends ContentProvider {
                 );
                 break;
             case MOVIES_WITH_ID:
+                Log.i(TAG, "Movies with ID loading");
                 //get ID from uri
                 String id = uri.getPathSegments().get(1);
-
+                Log.i(TAG, "_ID: " + id);
                 //Create selection and selection with id (SQL WHERE Clause)
                 String mSelection = "_id=?";
                 String[] mSelectionArgs = new String[]{id};
@@ -85,8 +94,36 @@ public class MovieContentProvider extends ContentProvider {
                         sortOrder
                 );
 
+                Log.i(TAG, "CursorCount: " + returnCursor.getCount());
                 break;
+            case TOP_RATED:
+                returnCursor = db.query(
+                        MovieContract.MovieEntry.TABLE_NAME_TOP_RATED,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null, null,
+                        sortOrder
+                );
+                break;
+            case TOP_RATED_WITH_ID:
+                //get ID from uri
+                String idTopRated = uri.getPathSegments().get(1);
 
+                //Create selection and selection with id (SQL WHERE Clause)
+                String mSelectionTopRated = "_id=?";
+                String[] mSelectionArgsTopRated = new String[]{idTopRated};
+
+                returnCursor = db.query(
+                        MovieContract.MovieEntry.TABLE_NAME,
+                        projection,
+                        mSelectionTopRated,
+                        mSelectionArgsTopRated,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -122,6 +159,8 @@ public class MovieContentProvider extends ContentProvider {
                     throw new SQLException("Failed to insert row into: " + uri);
                 }
                 break;
+            case TOP_RATED:
+                throw new UnsupportedOperationException("Not implemented");
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -145,6 +184,13 @@ public class MovieContentProvider extends ContentProvider {
             case MOVIES:
                 moviesDeleted = db.delete(
                         MovieContract.MovieEntry.TABLE_NAME,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            case TOP_RATED:
+                moviesDeleted = db.delete(
+                        MovieContract.MovieEntry.TABLE_NAME_TOP_RATED,
                         selection,
                         selectionArgs
                 );
@@ -199,7 +245,32 @@ public class MovieContentProvider extends ContentProvider {
                     getContext().getContentResolver().notifyChange(uri, null);
 
                 return rowsInserted;
+            case TOP_RATED:
+                db.beginTransaction();
+                rowsInserted = 0;
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insert(
+                                MovieContract.MovieEntry.TABLE_NAME_TOP_RATED,
+                                null,
+                                value
+                        );
 
+                        if (_id != -1) {
+                            //success
+                            rowsInserted++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    //after successful transaction
+                    db.endTransaction();
+                }
+
+                if (rowsInserted > 0)
+                    getContext().getContentResolver().notifyChange(uri, null);
+
+                return rowsInserted;
             default:
                 return super.bulkInsert(uri, values);
         }

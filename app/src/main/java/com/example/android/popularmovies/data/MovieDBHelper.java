@@ -16,7 +16,7 @@ public class MovieDBHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "moviesDb.db";
 
     // If you change the database schema, you must increment the database version
-    private static final int VERSION = 3;
+    private static final int VERSION = 5;
 
     public MovieDBHelper(Context context) {
         super(context, DATABASE_NAME, null, VERSION);
@@ -24,8 +24,27 @@ public class MovieDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        final String CREATE_TABLE = "CREATE TABLE " + MovieEntry.TABLE_NAME + " (" +
+
+        final String CREATE_TABLE = getCreateString(MovieEntry.TABLE_NAME);
+
+        final String CREATE_TABLE_TOP_RATED = getCreateString(MovieEntry.TABLE_NAME_TOP_RATED);
+
+        db.execSQL(CREATE_TABLE);
+        db.execSQL(CREATE_TABLE_TOP_RATED);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("DROP TABLE IF EXISTS " + MovieEntry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + MovieEntry.TABLE_NAME_TOP_RATED);
+        onCreate(db);
+        Log.i("Database", "upgrade");
+    }
+
+    private String getCreateString(String tableName) {
+        return "CREATE TABLE " + tableName + " (" +
                 MovieEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                MovieEntry.COLUMN_CREATE_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP, " +
                 MovieEntry.COLUMN_MOVIE_ID + " INTEGER UNIQUE, " +
                 MovieEntry.COLUMN_TITLE + " TEXT, " +
                 MovieEntry.COLUMN_ORIGINAL_TITLE + " TEXT, " +
@@ -34,13 +53,5 @@ public class MovieDBHelper extends SQLiteOpenHelper {
                 MovieEntry.COLUMN_VOTE_AVERAGE + " TEXT, " +
                 MovieEntry.COLUMN_POSTER_PATH + " TEXT, " +
                 MovieEntry.COLUMN_BACKDROP_PATH + " TEXT);";
-        db.execSQL(CREATE_TABLE);
-    }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + MovieEntry.TABLE_NAME);
-        onCreate(db);
-        Log.i("Database", "upgrade");
     }
 }
