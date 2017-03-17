@@ -1,8 +1,11 @@
 package com.example.android.popularmovies;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.databinding.DataBindingUtil;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -10,7 +13,9 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.android.popularmovies.data.MovieContract.MovieEntry;
 import com.example.android.popularmovies.databinding.ActivityDetailBinding;
@@ -30,6 +35,7 @@ public class DetailActivity extends AppCompatActivity {
 //    public final static String MOVIE_ORIGINAL_TITLE = "movie_original_title";
 
     private static int mIndex;
+    private static boolean sIsFavourite;
 
     ActivityDetailBinding mDataBinding;
 
@@ -125,7 +131,16 @@ public class DetailActivity extends AppCompatActivity {
 
         DisplayMetrics displaymetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
-        int width = displaymetrics.widthPixels;
+        int orientation = getResources().getConfiguration().orientation;
+
+        Log.i(TAG, "Orientation: " + orientation);
+        int width;
+        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+            width = displaymetrics.widthPixels;
+        }
+        else {
+            width = ((int) (displaymetrics.widthPixels * 0.7));
+        }
         Log.i(TAG, "width = " + width);
         int height = ((int) (width * 0.562));
         params.height = height;
@@ -158,6 +173,20 @@ public class DetailActivity extends AppCompatActivity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public void onClickFavourite(View view) {
+        if (sIsFavourite) {
+            mDataBinding.imageButtonFavourite.setImageResource(R.drawable.ic_star_border_blue);
+            sIsFavourite = false;
+            Toast.makeText(this, "Removed from Favourites", Toast.LENGTH_SHORT).show();
+            //TODO update DB
+        } else {
+            mDataBinding.imageButtonFavourite.setImageResource(R.drawable.ic_star_blue);
+            Toast.makeText(this, "Added to Favourites", Toast.LENGTH_SHORT).show();
+            sIsFavourite = true;
+            //TODO update DB
         }
     }
 }

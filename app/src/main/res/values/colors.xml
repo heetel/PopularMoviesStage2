@@ -6,4 +6,5 @@
     <color name="colorBackground">#181818</color>
     <color name="mColorLabel">#77aaff</color>
     <color name="colorTitleBackground">#96000000</color>
+    <color name="navigationBarColor">@color/colorBackground</color>
 </resources>

@@ -16,7 +16,7 @@ public class MovieDBHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "moviesDb.db";
 
     // If you change the database schema, you must increment the database version
-    private static final int VERSION = 5;
+    private static final int VERSION = 6;
 
     public MovieDBHelper(Context context) {
         super(context, DATABASE_NAME, null, VERSION);
@@ -29,14 +29,18 @@ public class MovieDBHelper extends SQLiteOpenHelper {
 
         final String CREATE_TABLE_TOP_RATED = getCreateString(MovieEntry.TABLE_NAME_TOP_RATED);
 
+        final String CREATE_TABLE_FAVOURITES = getCreateString(MovieEntry.TABLE_NAME_FAVOURITES);
+
         db.execSQL(CREATE_TABLE);
         db.execSQL(CREATE_TABLE_TOP_RATED);
+        db.execSQL(CREATE_TABLE_FAVOURITES);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + MovieEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + MovieEntry.TABLE_NAME_TOP_RATED);
+        db.execSQL("DROP TABLE IF EXISTS " + MovieEntry.TABLE_NAME_FAVOURITES);
         onCreate(db);
         Log.i("Database", "upgrade");
     }

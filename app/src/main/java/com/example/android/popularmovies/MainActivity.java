@@ -116,21 +116,22 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void loadFromNetwork() {
-        //TODO Check if online
 
-//        //load data from DB to update the page number
-//        loadFromDB();
-
-        //Put page into Bundle
-        Bundle bundle = new Bundle();
-        bundle.putInt(PAGE_KEY, page);
-
-        //Initialize/start Loader
-        Loader<Integer> movieLoader = getSupportLoaderManager().getLoader(NETWORK_LOADER_ID);
-        if (movieLoader == null) {
-            getSupportLoaderManager().initLoader(NETWORK_LOADER_ID, bundle, this);
+        //check internet connection
+        if (!isOnline()) {
+            showNoConnectionDialog();
         } else {
-            getSupportLoaderManager().restartLoader(NETWORK_LOADER_ID, bundle, this);
+            //Put page into Bundle
+            Bundle bundle = new Bundle();
+            bundle.putInt(PAGE_KEY, page);
+
+            //Initialize/start Loader
+            Loader<Integer> movieLoader = getSupportLoaderManager().getLoader(NETWORK_LOADER_ID);
+            if (movieLoader == null) {
+                getSupportLoaderManager().initLoader(NETWORK_LOADER_ID, bundle, this);
+            } else {
+                getSupportLoaderManager().restartLoader(NETWORK_LOADER_ID, bundle, this);
+            }
         }
     }
 

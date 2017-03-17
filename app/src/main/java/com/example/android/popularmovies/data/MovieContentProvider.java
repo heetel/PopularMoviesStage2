@@ -27,6 +27,9 @@ public class MovieContentProvider extends ContentProvider {
     public static final int TOP_RATED = 200;
     public static final int TOP_RATED_WITH_ID = 201;
 
+    public static final int FAVOURITES = 300;
+    public static final int FAVOURITES_WITH_ID = 301;
+
     private static final UriMatcher sUriMatcher = buildUriMatcher();
 
     public static UriMatcher buildUriMatcher() {
@@ -34,14 +37,16 @@ public class MovieContentProvider extends ContentProvider {
 
         //add Uri for all movies
         uriMatcher.addURI(MovieContract.AUTHORITY, MovieContract.PATH_MOVIES, MOVIES);
-
         //add Uri for one specific movie
         uriMatcher.addURI(MovieContract.AUTHORITY, MovieContract.PATH_MOVIES + "/#", MOVIES_WITH_ID);
 
         uriMatcher.addURI(MovieContract.AUTHORITY, MovieContract.PATH_TOP_RATED, TOP_RATED);
-
         uriMatcher.addURI(
                 MovieContract.AUTHORITY, MovieContract.PATH_TOP_RATED + "/#", TOP_RATED_WITH_ID);
+
+        uriMatcher.addURI(MovieContract.AUTHORITY, MovieContract.PATH_FAVOURITES, FAVOURITES);
+        uriMatcher.addURI(
+                MovieContract.AUTHORITY, MovieContract.PATH_FAVOURITES + "/#", FAVOURITES_WITH_ID);
 
         return uriMatcher;
     }
@@ -124,6 +129,34 @@ public class MovieContentProvider extends ContentProvider {
                         sortOrder
                 );
                 break;
+            case FAVOURITES:
+                returnCursor = db.query(
+                        MovieContract.MovieEntry.TABLE_NAME_FAVOURITES,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null, null,
+                        sortOrder
+                );
+                break;
+            case FAVOURITES_WITH_ID:
+                //get ID from uri
+                String idFavourites = uri.getPathSegments().get(1);
+
+                //Create selection and selection with id (SQL WHERE Clause)
+                String mSelectionFavourites = "_id=?";
+                String[] mSelectionArgsFavourites = new String[]{idFavourites};
+
+                returnCursor = db.query(
+                        MovieContract.MovieEntry.TABLE_NAME_FAVOURITES,
+                        projection,
+                        mSelectionFavourites,
+                        mSelectionArgsFavourites,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -154,13 +187,24 @@ public class MovieContentProvider extends ContentProvider {
                 long id = db.insert(MovieContract.MovieEntry.TABLE_NAME, null, values);
                 if (id > 0) {
                     //success
-                    returnUri = ContentUris.withAppendedId(MovieContract.MovieEntry.CONTENT_URI, id);
+                    returnUri = ContentUris.withAppendedId(
+                            MovieContract.MovieEntry.CONTENT_URI, id);
                 } else {
                     throw new SQLException("Failed to insert row into: " + uri);
                 }
                 break;
             case TOP_RATED:
                 throw new UnsupportedOperationException("Not implemented");
+            case FAVOURITES:
+                long idFavourites = db.insert(
+                        MovieContract.MovieEntry.TABLE_NAME_FAVOURITES, null, values);
+                if (idFavourites > 0) {
+                    //success
+                    returnUri = ContentUris.withAppendedId(
+                            MovieContract.MovieEntry.CONTENT_URI_FAVOURITES, idFavourites);
+                } else {
+                    throw new SQLException("Failed to insert row into: " + uri);
+                }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -172,7 +216,8 @@ public class MovieContentProvider extends ContentProvider {
     }
 
     @Override
-    public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
+    public int delete(@NonNull Uri uri, @Nullable String selection,
+                      @Nullable String[] selectionArgs) {
 
         final SQLiteDatabase db = mMovieDBHelper.getWritableDatabase();
 
@@ -195,6 +240,27 @@ public class MovieContentProvider extends ContentProvider {
                         selectionArgs
                 );
                 break;
+            case FAVOURITES:
+                moviesDeleted = db.delete(
+                        MovieContract.MovieEntry.TABLE_NAME_FAVOURITES,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            case FAVOURITES_WITH_ID:
+                //get ID from uri
+                String idFavourites = uri.getPathSegments().get(1);
+
+                //Create selection and selection with id (SQL WHERE Clause)
+                String mSelectionFavourites = "_id=?";
+                String[] mSelectionArgsFavourites = new String[]{idFavourites};
+
+                moviesDeleted = db.delete(
+                        MovieContract.MovieEntry.TABLE_NAME_FAVOURITES,
+                        mSelectionFavourites,
+                        mSelectionArgsFavourites
+                );
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -207,7 +273,11 @@ public class MovieContentProvider extends ContentProvider {
 
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
-        throw new UnsupportedOperationException("Not yet implemented!");
+        final SQLiteDatabase db = mMovieDBHelper.getWritableDatabase();
+
+        int match = sUriMatcher.match(uri);
+        //TODO implement
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -271,6 +341,8 @@ public class MovieContentProvider extends ContentProvider {
                     getContext().getContentResolver().notifyChange(uri, null);
 
                 return rowsInserted;
+            case FAVOURITES:
+                throw new UnsupportedOperationException("Not implemented.");
             default:
                 return super.bulkInsert(uri, values);
         }

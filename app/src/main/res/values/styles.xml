@@ -13,6 +13,7 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:navigationBarColor">@color/navigationBarColor</item>
     </style>
 
 
@@ -29,12 +30,14 @@
         <item name="android:textColor">@android:color/primary_text_dark</item>
         <item name="android:paddingLeft">16dp</item>
         <item name="android:paddingBottom">12dp</item>
+        <item name="android:textIsSelectable">true</item>
     </style>
 
     <style name="TvTitle">
         <item name="android:textSize">28sp</item>
         <item name="android:textColor">@android:color/primary_text_dark</item>
         <item name="android:background">@color/colorTitleBackground</item>
+        <item name="android:textIsSelectable">true</item>
     </style>
 
 </resources>
