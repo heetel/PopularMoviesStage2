@@ -54,9 +54,9 @@ public class MainActivity extends AppCompatActivity
     private static final int NUM_LIST_ITEMS = 20;
     private static final int RESULTS_PER_PAGE = 20;
 
-    private static final int CODE_POPULAR = 1231;
-    private static final int CODE_TOP_RATED = 1232;
-    private static final int CODE_FAVOURITES = 1233;
+    public static final int CODE_POPULAR = 1231;
+    public static final int CODE_TOP_RATED = 1232;
+    public static final int CODE_FAVOURITES = 1233;
     private static int sActiveTable = CODE_POPULAR;
 
     @Override
@@ -90,12 +90,9 @@ public class MainActivity extends AppCompatActivity
         Context context = MainActivity.this;
         Intent intent = new Intent(context, DetailActivity.class);
 
-//        intent.putExtra(DetailActivity._ID, clickedItemIndex);
+        intent.putExtra(DetailActivity.INDEX_KEY, clickedItemIndex);
 
-        switch (sActiveTable) {
-            case CODE_POPULAR:
-                intent.putExtra(DetailActivity.INDEX_KEY, clickedItemIndex);
-        }
+        intent.putExtra(DetailActivity.TABLE_KEY, sActiveTable);
 
         startActivity(intent);
     }
@@ -160,7 +157,7 @@ public class MainActivity extends AppCompatActivity
             Log.i(TAG, "action_filter clicked");
             showPopup();
         } else if (item.getItemId() == R.id.action_clear_db) {
-            int rows = getContentResolver().delete(MovieContract.MovieEntry.CONTENT_URI, null, null);
+            int rows = getContentResolver().delete(getActiveTableUri(sActiveTable), null, null);
             mAdapter.setMovies(null);
             page = 1;
             Log.i(TAG, rows + " rows deleted");
@@ -170,6 +167,20 @@ public class MainActivity extends AppCompatActivity
             loadFromDB();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public static Uri getActiveTableUri(int key) {
+        switch (key) {
+            case CODE_POPULAR:
+                return MovieContract.MovieEntry.CONTENT_URI;
+            case MainActivity.CODE_TOP_RATED:
+                return MovieContract.MovieEntry.CONTENT_URI_TOP_RATED;
+            case MainActivity.CODE_FAVOURITES:
+                //TODO implement favourites
+                return null;
+            default:
+                return MovieContract.MovieEntry.CONTENT_URI;
+        }
     }
 
     public void showPopup() {

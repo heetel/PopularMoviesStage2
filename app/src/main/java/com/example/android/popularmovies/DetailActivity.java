@@ -21,6 +21,7 @@ public class DetailActivity extends AppCompatActivity {
     private final static String TAG = DetailActivity.class.getSimpleName();
 
     public static final String INDEX_KEY = "index_key";
+    public static final String TABLE_KEY = "table_key";
 //    public final static String MOVIE_TITLE = "movie_title";
 //    public final static String MOVIE_VOTE_AVERAGE = "movie_vote_average";
 //    public final static String MOVIE_OVERVIEW = "movie_overview";
@@ -52,20 +53,26 @@ public class DetailActivity extends AppCompatActivity {
 
     private void loadDataFromDB() {
         Intent intent = getIntent();
-        if (!intent.hasExtra(INDEX_KEY))
+        if (!intent.hasExtra(INDEX_KEY) || !intent.hasExtra(TABLE_KEY))
             return;
         mIndex = intent.getIntExtra(INDEX_KEY, 0);
 
-        new MovieTask().execute();
+        int mTableKey = intent.getIntExtra(TABLE_KEY, MainActivity.CODE_POPULAR);
+
+        Uri uri = MainActivity.getActiveTableUri(mTableKey);
+
+        new MovieTask().execute(uri);
     }
 
     private class MovieTask extends AsyncTask<Uri, Void, Cursor> {
 
         @Override
         protected Cursor doInBackground(Uri... params) {
-            Log.i(TAG, "background: " + params.length);
+            if (params.length < 1)
+                throw new IllegalArgumentException("Missing ContentUri to load from");
+
             return getContentResolver().query(
-                    MovieEntry.CONTENT_URI,
+                    params[0],
                     null,
                     null,
                     null,
