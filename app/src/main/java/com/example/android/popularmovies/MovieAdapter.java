@@ -37,6 +37,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
     public interface ListItemCallbackListener {
         void onListItemClick(Cursor cursor, int clickedItemIndex);
         void onLoadMore();
+        void updatePosition(int position);
     }
 
     public MovieAdapter(int numberItems, ListItemCallbackListener listener, Context context) {
@@ -67,6 +68,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
             Log.i(TAG, "the end is near");
             mOnClickListener.onLoadMore();
         }
+        mOnClickListener.updatePosition(position);
         holder.bind(position);
     }
 

@@ -13,4 +13,5 @@
     <string name="request_internet_connection">Please connect to the internet.</string>
     <string name="thumbnail">Cover image</string>
     <string name="title">Title</string>
+    <string name="favourites">Favourites</string>
 </resources>

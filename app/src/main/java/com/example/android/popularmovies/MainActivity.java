@@ -41,6 +41,10 @@ public class MainActivity extends AppCompatActivity
 
     private final String TAG = MainActivity.class.getSimpleName();
 
+    private static final String QUICKSTART_POPULAR = "com.example.android.popularmovies.QUICKSTART_POPULAR";
+    private static final String QUICKSTART_TOP_RATED = "com.example.android.popularmovies.QUICKSTART_TOP_RATED";
+    private static final String QUICKSTART_FAVOURITES = "com.example.android.popularmovies.QUICKSTART_FAVOURITES";
+
     private RecyclerView rvMovies;
     private ProgressBar pbLoadingIndicator;
     private Menu menu;
@@ -56,10 +60,16 @@ public class MainActivity extends AppCompatActivity
     private static final int NUM_LIST_ITEMS = 20;
     private static final int RESULTS_PER_PAGE = 20;
 
+    private static final String KEY_CURRENT_SCROLLPOSITION = "key-current-scollposition";
+
+    private static final String KEY_ACTIVE_TABLE = "key-active-table";
     public static final int CODE_POPULAR = 1231;
     public static final int CODE_TOP_RATED = 1232;
     public static final int CODE_FAVOURITES = 1233;
     private static int sActiveTable = CODE_POPULAR;
+
+    private static int sCurrentScrollPosition = 0;
+    private static int sRestoredScrollPosition = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +96,34 @@ public class MainActivity extends AppCompatActivity
 
         mContext = this;
 
+        String action = getIntent().getAction();
+        Log.i(TAG, "intent action: " + action);
+        switch (getIntent().getAction()) {
+            case QUICKSTART_POPULAR:
+                sActiveTable = CODE_POPULAR;
+                break;
+            case QUICKSTART_TOP_RATED:
+                sActiveTable = CODE_TOP_RATED;
+                break;
+            case QUICKSTART_FAVOURITES:
+                Log.i(TAG, "Quickstart Favourites");
+                sActiveTable = CODE_FAVOURITES;
+                break;
+            default:
+        }
+
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(KEY_ACTIVE_TABLE)) {
+                sActiveTable = savedInstanceState.getInt(KEY_ACTIVE_TABLE);
+                Log.i(TAG, "savedInstanceState restored");
+            }
+            if (savedInstanceState.containsKey(KEY_CURRENT_SCROLLPOSITION)) {
+                int scrollPosition = savedInstanceState.getInt(KEY_CURRENT_SCROLLPOSITION);
+                sRestoredScrollPosition = scrollPosition;
+                Log.i(TAG, "savedInstanceState restored scrollposition: " + scrollPosition);
+            }
+        }
+
         loadFromDB();
     }
 
@@ -96,6 +134,16 @@ public class MainActivity extends AppCompatActivity
             loadFromDB();
         }
         super.onResume();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(KEY_ACTIVE_TABLE, sActiveTable);
+        Log.i(TAG, "saved active table");
+        int scroll = sCurrentScrollPosition;
+        outState.putInt(KEY_CURRENT_SCROLLPOSITION, scroll);
+        Log.i(TAG, "saved scroll position: " + scroll);
     }
 
     @Override
@@ -122,11 +170,14 @@ public class MainActivity extends AppCompatActivity
         loadFromNetwork();
     }
 
-
+    @Override
+    public void updatePosition(int position) {
+        sCurrentScrollPosition = position;
+    }
 
     private void loadFromDB() {
         Log.i(TAG, "loadFromDB called");
-//        getSupportLoaderManager().restartLoader(MOVIE_FROM_DB_LOADER_ID, null, this);
+
         new MovieFromDBTask().execute();
     }
 
@@ -153,13 +204,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        Log.i(TAG, "onCreateOptionsMenu");
         getMenuInflater().inflate(R.menu.main, menu);
-        if (!NetworkUtils.isPopular()) {
-            MenuItem miFilter = menu.findItem(R.id.action_filter);
-            String topRated = getResources().getString(R.string.top_rated);
-            miFilter.setTitle(topRated);
-        }
         this.menu = menu;
+        updateSelectorTitle();
         return true;
     }
 
@@ -214,38 +262,47 @@ public class MainActivity extends AppCompatActivity
             public boolean onMenuItemClick(MenuItem menuItem) {
                 if (menuItem.getItemId() == R.id.action_popular) {
                     Log.i(TAG, "MenuItem popular clicked");
-                    MenuItem miFilter = menu.findItem(R.id.action_filter);
-                    String popular = getResources().getString(R.string.popular);
-                    miFilter.setTitle(popular);
-                    NetworkUtils.setPopular();
-                    page = 1;
-//                    mMovies = null;
-                    sActiveTable = CODE_POPULAR;
-                    loadFromDB();
-                    rvMovies.scrollToPosition(0);
+                    loadPopular();
                 } else if (menuItem.getItemId() == R.id.action_top_rated) {
                     Log.i(TAG, "MenuItem top rated clicked");
-                    MenuItem miFilter = menu.findItem(R.id.action_filter);
-                    String topRated = getResources().getString(R.string.top_rated);
-                    miFilter.setTitle(topRated);
-                    NetworkUtils.setTopRated();
-                    page = 1;
-                    mMovies = null;
-                    sActiveTable = CODE_TOP_RATED;
-                    loadFromDB();
-                    rvMovies.scrollToPosition(0);
+                    loadTopRated();
                 } else if (menuItem.getItemId() == R.id.action_favourites) {
                     Log.i(TAG, "MenuItem Favourites clicked");
-                    MenuItem miFilter = menu.findItem(R.id.action_filter);
-                    miFilter.setTitle("Favourites");
-                    sActiveTable = CODE_FAVOURITES;
-                    loadFromDB();
-                    rvMovies.scrollToPosition(0);
+                    loadFavourites();
                 }
+                updateSelectorTitle();
                 return false;
             }
         });
         popupMenu.show();
+    }
+
+    private void loadPopular() {
+//        MenuItem miFilter = menu.findItem(R.id.action_filter);
+//        String popular = getResources().getString(R.string.popular);
+//        miFilter.setTitle(popular);
+        NetworkUtils.setPopular();
+        page = 1;
+        sActiveTable = CODE_POPULAR;
+        loadFromDB();
+        rvMovies.scrollToPosition(0);
+    }
+
+    private void loadTopRated() {
+        NetworkUtils.setTopRated();
+        page = 1;
+        mMovies = null;
+        sActiveTable = CODE_TOP_RATED;
+        loadFromDB();
+        rvMovies.scrollToPosition(0);
+    }
+
+    private void loadFavourites() {
+//        MenuItem miFilter = menu.findItem(R.id.action_filter);
+//        miFilter.setTitle("Favourites");
+        sActiveTable = CODE_FAVOURITES;
+        loadFromDB();
+        rvMovies.scrollToPosition(0);
     }
 
     private boolean isOnline() {
@@ -390,6 +447,10 @@ public class MainActivity extends AppCompatActivity
         protected void onPostExecute(Cursor cursor) {
             pbLoadingIndicator.setVisibility(View.INVISIBLE);
             mAdapter.setMovies(cursor);
+            if (sRestoredScrollPosition != 0) {
+                rvMovies.scrollToPosition(sRestoredScrollPosition);
+                sRestoredScrollPosition = 0;
+            }
             if (cursor!= null && sActiveTable != CODE_FAVOURITES) {
                 page = (cursor.getCount() / RESULTS_PER_PAGE);
                 page++;
@@ -400,6 +461,26 @@ public class MainActivity extends AppCompatActivity
                     loadFromNetwork();
                 }
             }
+
+//            updateSelectorTitle();
+        }
+    }
+
+    private void updateSelectorTitle() {
+        MenuItem miFilter = menu.findItem(R.id.action_filter);
+        switch (sActiveTable) {
+            case CODE_POPULAR:
+//                String popular = getResources().getString(R.string.popular);
+                miFilter.setTitle(R.string.popular);
+                break;
+            case CODE_TOP_RATED:
+                miFilter.setTitle(R.string.top_rated);
+                break;
+            case CODE_FAVOURITES:
+                miFilter.setTitle(R.string.favourites);
+                break;
+            default:
+                miFilter.setTitle(R.string.popular);
         }
     }
 }
