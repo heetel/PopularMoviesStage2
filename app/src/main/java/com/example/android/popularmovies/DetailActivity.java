@@ -1,11 +1,10 @@
 package com.example.android.popularmovies;
 
-import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.databinding.DataBindingUtil;
-import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -34,8 +33,10 @@ public class DetailActivity extends AppCompatActivity {
 //    public final static String MOVIE_POSTER_PATH = "movie_poster_path";
 //    public final static String MOVIE_ORIGINAL_TITLE = "movie_original_title";
 
-    private static int mIndex;
-    private static boolean sIsFavourite;
+    private  int mIndex;
+    private  boolean sIsFavourite;
+    private  ContentValues mValues;
+    private  String mMovieId;
 
     ActivityDetailBinding mDataBinding;
 
@@ -55,6 +56,7 @@ public class DetailActivity extends AppCompatActivity {
 
 //        ScrollView scrollView = (ScrollView) findViewById(R.id.d_scrollview);
 //        scrollView.smoothScrollTo(0,0);
+
     }
 
     private void loadDataFromDB() {
@@ -93,9 +95,46 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
+    private class CheckFavouritesTask extends AsyncTask<String, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(String... strings) {
+            if (strings.length < 1)
+                return null;
+
+            String mSelection = MovieEntry.COLUMN_MOVIE_ID + "=?";
+
+            boolean isFavourite;
+
+            Cursor cursor = getContentResolver().query(MovieEntry.CONTENT_URI_FAVOURITES,
+                    null,
+                    mSelection,
+                    strings,
+                    null);
+
+            if (cursor == null)
+                return false;
+
+            isFavourite = cursor.getCount() > 0;
+
+            cursor.close();
+
+            return isFavourite;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean isFavourite) {
+            if (isFavourite) {
+                sIsFavourite = true;
+                mDataBinding.imageButtonFavourite.setImageResource(R.drawable.ic_star_blue);
+            }
+        }
+    }
+
     private void updateUI(Cursor cursor) {
         cursor.moveToPosition(mIndex);
 
+        mMovieId = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_MOVIE_ID));
         String title = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_TITLE));
         String releaseDate = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_RELEASE_DATE));
         String vote = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_VOTE_AVERAGE));
@@ -121,8 +160,21 @@ public class DetailActivity extends AppCompatActivity {
                         posterPath)
                 .into(mDataBinding.imageViewPoster);
 
-//        Log.i(TAG, backdropPath);
         scaleBackdrop();
+
+        //Check if shown movie is a favourite and update the favourite ImageButton
+        new CheckFavouritesTask().execute(mMovieId);
+
+        //put data into ContentValues
+        mValues = new ContentValues();
+        mValues.put(MovieEntry.COLUMN_MOVIE_ID, mMovieId);
+        mValues.put(MovieEntry.COLUMN_TITLE, title);
+        mValues.put(MovieEntry.COLUMN_RELEASE_DATE, releaseDate);
+        mValues.put(MovieEntry.COLUMN_VOTE_AVERAGE, vote);
+        mValues.put(MovieEntry.COLUMN_ORIGINAL_TITLE, originalTitle);
+        mValues.put(MovieEntry.COLUMN_BACKDROP_PATH, backdropPath);
+        mValues.put(MovieEntry.COLUMN_POSTER_PATH, posterPath);
+        mValues.put(MovieEntry.COLUMN_OVERVIEW, overview);
     }
 
     private void scaleBackdrop() {
@@ -150,20 +202,6 @@ public class DetailActivity extends AppCompatActivity {
 
     }
 
-//    private void adjustThumbnailSize() {
-//        RelativeLayout rlThumbnail = (RelativeLayout) findViewById(R.id.layout_thumbnail);
-//        ViewGroup.LayoutParams layoutParams = rlThumbnail.getLayoutParams();
-//        DisplayMetrics displaymetrics = new DisplayMetrics();
-//        getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
-//        int displayWidth = displaymetrics.widthPixels;
-//        ViewGroup.LayoutParams params = ivThumbnail.getLayoutParams();
-//        Log.i(TAG, "thumbnail: " + params.width + "x" + layoutParams.height);
-//        params.width = displayWidth / 2;
-//        layoutParams.height = (int) ((displayWidth / 2) * 1.45);
-//        ivThumbnail.setLayoutParams(params);
-//        rlThumbnail.setLayoutParams(layoutParams);
-//    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -181,12 +219,18 @@ public class DetailActivity extends AppCompatActivity {
             mDataBinding.imageButtonFavourite.setImageResource(R.drawable.ic_star_border_blue);
             sIsFavourite = false;
             Toast.makeText(this, "Removed from Favourites", Toast.LENGTH_SHORT).show();
-            //TODO update DB
+            int rows = getContentResolver().delete(
+                    MovieEntry.CONTENT_URI_FAVOURITES,
+                    MovieEntry.COLUMN_MOVIE_ID + "=?",
+                    new String[]{mMovieId}
+            );
+            Log.i(TAG, rows + " rows deleted");
         } else {
             mDataBinding.imageButtonFavourite.setImageResource(R.drawable.ic_star_blue);
             Toast.makeText(this, "Added to Favourites", Toast.LENGTH_SHORT).show();
             sIsFavourite = true;
-            //TODO update DB
+            Uri uri = getContentResolver().insert(MovieEntry.CONTENT_URI_FAVOURITES, mValues);
+            Log.i(TAG, "Added to Favourites: " + uri);
         }
     }
 }

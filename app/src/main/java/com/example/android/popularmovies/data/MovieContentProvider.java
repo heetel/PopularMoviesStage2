@@ -205,6 +205,7 @@ public class MovieContentProvider extends ContentProvider {
                 } else {
                     throw new SQLException("Failed to insert row into: " + uri);
                 }
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }

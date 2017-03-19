@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -48,8 +49,9 @@ public class MainActivity extends AppCompatActivity
     private Context mContext;
 
     private static int page = 1;
-    private static int NETWORK_LOADER_ID = 221;
     private static final String PAGE_KEY = "page-key";
+
+    public static int sColumnCount = 2;
 
     private static final int NUM_LIST_ITEMS = 20;
     private static final int RESULTS_PER_PAGE = 20;
@@ -67,7 +69,11 @@ public class MainActivity extends AppCompatActivity
         rvMovies = (RecyclerView) findViewById(R.id.rv_movies);
         pbLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
+        sColumnCount = 2;
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+            sColumnCount = 3;
+
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, sColumnCount);
         rvMovies.setLayoutManager(gridLayoutManager);
 
         rvMovies.setHasFixedSize(true);
@@ -81,6 +87,15 @@ public class MainActivity extends AppCompatActivity
         mContext = this;
 
         loadFromDB();
+    }
+
+    @Override
+    protected void onResume() {
+        if (sActiveTable == CODE_FAVOURITES) {
+            Log.i(TAG, "onResume: refresh favourites");
+            loadFromDB();
+        }
+        super.onResume();
     }
 
     @Override
@@ -103,7 +118,7 @@ public class MainActivity extends AppCompatActivity
      */
     @Override
     public void onLoadMore() {
-//        page ++;
+        if (sActiveTable == CODE_FAVOURITES) return;
         loadFromNetwork();
     }
 
@@ -126,6 +141,7 @@ public class MainActivity extends AppCompatActivity
             bundle.putInt(PAGE_KEY, page);
 
             //Initialize/start Loader
+            int NETWORK_LOADER_ID = 221;
             Loader<Integer> movieLoader = getSupportLoaderManager().getLoader(NETWORK_LOADER_ID);
             if (movieLoader == null) {
                 getSupportLoaderManager().initLoader(NETWORK_LOADER_ID, bundle, this);
@@ -152,22 +168,27 @@ public class MainActivity extends AppCompatActivity
         Log.i(TAG, "onOptionsItemSelected called");
         if (item.getItemId() == R.id.action_refresh) {
             Log.i(TAG, "refresh called");
+            clearDB();
             loadFromDB();
             return true;
         } else if (item.getItemId() == R.id.action_filter) {
             Log.i(TAG, "action_filter clicked");
             showPopup();
         } else if (item.getItemId() == R.id.action_clear_db) {
-            int rows = getContentResolver().delete(getActiveTableUri(sActiveTable), null, null);
-            mAdapter.setMovies(null);
-            page = 1;
-            Log.i(TAG, rows + " rows deleted");
+            clearDB();
         } else if (item.getItemId() == R.id.action_load_from_network) {
             loadFromNetwork();
         } else if (item.getItemId() == R.id.action_load_from_db) {
             loadFromDB();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void clearDB() {
+        int rows = getContentResolver().delete(getActiveTableUri(sActiveTable), null, null);
+        mAdapter.setMovies(null);
+        page = 1;
+        Log.i(TAG, rows + " rows deleted");
     }
 
     public static Uri getActiveTableUri(int key) {
@@ -177,8 +198,7 @@ public class MainActivity extends AppCompatActivity
             case MainActivity.CODE_TOP_RATED:
                 return MovieContract.MovieEntry.CONTENT_URI_TOP_RATED;
             case MainActivity.CODE_FAVOURITES:
-                //TODO implement favourites
-                return null;
+                return MovieContract.MovieEntry.CONTENT_URI_FAVOURITES;
             default:
                 return MovieContract.MovieEntry.CONTENT_URI;
         }
@@ -212,6 +232,13 @@ public class MainActivity extends AppCompatActivity
                     page = 1;
                     mMovies = null;
                     sActiveTable = CODE_TOP_RATED;
+                    loadFromDB();
+                    rvMovies.scrollToPosition(0);
+                } else if (menuItem.getItemId() == R.id.action_favourites) {
+                    Log.i(TAG, "MenuItem Favourites clicked");
+                    MenuItem miFilter = menu.findItem(R.id.action_filter);
+                    miFilter.setTitle("Favourites");
+                    sActiveTable = CODE_FAVOURITES;
                     loadFromDB();
                     rvMovies.scrollToPosition(0);
                 }
@@ -320,7 +347,7 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    public class MovieFromDBTask extends AsyncTask<Uri, Void, Cursor> {
+    private class MovieFromDBTask extends AsyncTask<Uri, Void, Cursor> {
 
         @Override
         protected void onPreExecute() {
@@ -347,8 +374,13 @@ public class MainActivity extends AppCompatActivity
                             null
                     );
                 case CODE_FAVOURITES:
-                    //TODO implement favourites
-                    return null;
+                    return  getContentResolver().query(
+                            MovieContract.MovieEntry.CONTENT_URI_FAVOURITES,
+                            null,
+                            null,
+                            null,
+                            null
+                    );
                 default:
                     return null;
             }
@@ -358,7 +390,7 @@ public class MainActivity extends AppCompatActivity
         protected void onPostExecute(Cursor cursor) {
             pbLoadingIndicator.setVisibility(View.INVISIBLE);
             mAdapter.setMovies(cursor);
-            if (cursor!= null) {
+            if (cursor!= null && sActiveTable != CODE_FAVOURITES) {
                 page = (cursor.getCount() / RESULTS_PER_PAGE);
                 page++;
                 Log.i(TAG, "page updated to " + page);

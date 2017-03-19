@@ -7,7 +7,6 @@ import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -15,8 +14,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
-
-import java.util.ArrayList;
 
 import com.example.android.popularmovies.data.MovieContract.MovieEntry;
 
@@ -141,7 +138,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
             int width = displaymetrics.widthPixels;
 //            Log.i(TAG,"display: "+height+"x"+width);
 
-            double newWidthD = (width / 2) * 1.5;
+            double newWidthD = (width / MainActivity.sColumnCount) * 1.5;
             int newWidthInt = (int) newWidthD;
 
             params.height = newWidthInt;
