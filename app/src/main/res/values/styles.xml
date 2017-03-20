@@ -13,7 +13,7 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:navigationBarColor">@color/navigationBarColor</item>
+        <!--<item name="android:navigationBarColor">@color/navigationBarColor</item>-->
     </style>
 
 
@@ -31,6 +31,12 @@
         <item name="android:paddingLeft">16dp</item>
         <item name="android:paddingBottom">12dp</item>
         <item name="android:textIsSelectable">true</item>
+    </style>
+
+    <style name="TvVideoName" parent="TvContent">
+        <item name="android:textSize">20sp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:textIsSelectable">false</item>
     </style>
 
     <style name="TvTitle">

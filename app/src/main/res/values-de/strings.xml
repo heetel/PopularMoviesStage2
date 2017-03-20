@@ -14,4 +14,6 @@
     <string name="thumbnail">Titelbild</string>
     <string name="title">Titel</string>
     <string name="favourites">Favoriten</string>
+    <string name="videos">Videos</string>
+    <string name="reviews">Rezensionen</string>
 </resources>

@@ -14,4 +14,6 @@
     <string name="thumbnail">Imagen de portada</string>
     <string name="title">Titulo</string>
     <string name="favourites">Favoritos</string>
+    <string name="reviews">Comentarios</string>
+    <string name="videos">Videos</string>
 </resources>

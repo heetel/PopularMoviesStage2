@@ -1,5 +1,6 @@
 package com.example.android.popularmovies;
 
+import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -7,8 +8,14 @@ import android.database.Cursor;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MenuItem;
@@ -18,26 +25,31 @@ import android.widget.Toast;
 
 import com.example.android.popularmovies.data.MovieContract.MovieEntry;
 import com.example.android.popularmovies.databinding.ActivityDetailBinding;
+import com.example.android.popularmovies.databinding.VideoItemBinding;
+import com.example.android.popularmovies.utilities.ListUtil;
+import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
-public class DetailActivity extends AppCompatActivity {
+import java.io.IOException;
+import java.util.HashMap;
+
+public class DetailActivity extends AppCompatActivity
+    implements LoaderManager.LoaderCallbacks<ContentValues>{
 
     private final static String TAG = DetailActivity.class.getSimpleName();
 
     public static final String INDEX_KEY = "index_key";
     public static final String TABLE_KEY = "table_key";
-//    public final static String MOVIE_TITLE = "movie_title";
-//    public final static String MOVIE_VOTE_AVERAGE = "movie_vote_average";
-//    public final static String MOVIE_OVERVIEW = "movie_overview";
-//    public final static String MOVIE_RELEASE_DATE = "movie_release_date";
-//    public final static String MOVIE_POSTER_PATH = "movie_poster_path";
-//    public final static String MOVIE_ORIGINAL_TITLE = "movie_original_title";
 
-    private  int mIndex;
-    private  boolean sIsFavourite;
-    private  ContentValues mValues;
-    private  String mMovieId;
+    private final static int LOADER_ID = 420;
+    private static final String MOVIE_ID_KEY = "movie_id_key";
 
+    private int mIndex;
+    private boolean sIsFavourite;
+    private ContentValues mValues;
+    private String mMovieId;
+    private String[] mVideoNames, mVideoKeys;
+    private VideoItemBinding[] mVideoItems;
     ActivityDetailBinding mDataBinding;
 
     @Override
@@ -51,12 +63,15 @@ public class DetailActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
+        getWindow().setNavigationBarColor(getResources().getColor(R.color.navigationBarColor));
+
         loadDataFromDB();
-//        adjustThumbnailSize();
+    }
 
-//        ScrollView scrollView = (ScrollView) findViewById(R.id.d_scrollview);
-//        scrollView.smoothScrollTo(0,0);
-
+    private void loadDetails() {
+        Bundle bundle = new Bundle();
+        bundle.putString(MOVIE_ID_KEY, mMovieId);
+        getSupportLoaderManager().initLoader(LOADER_ID, bundle, this);
     }
 
     private void loadDataFromDB() {
@@ -92,6 +107,7 @@ public class DetailActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Cursor cursor) {
             updateUI(cursor);
+//            loadDetails();
         }
     }
 
@@ -143,6 +159,56 @@ public class DetailActivity extends AppCompatActivity {
                 cursor.getColumnIndex(MovieEntry.COLUMN_BACKDROP_PATH));
         String posterPath = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_POSTER_PATH));
         String overview = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_OVERVIEW));
+
+        String videoNamesArray = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_VIDEOS_NAMES));
+//        Log.i(TAG, "Video Names: " + videoNamesArray);
+        if (videoNamesArray == null) {
+            loadDetails();
+        } else {
+            mVideoNames = ListUtil.convertStringToArray(videoNamesArray, ",");
+            String videoKeysArray = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_VIDEOS_KEYS));
+            mVideoKeys = ListUtil.convertStringToArray(videoKeysArray, ",");
+
+            mVideoItems = new VideoItemBinding[] {
+                    mDataBinding.videoItem1,
+                    mDataBinding.videoItem2,
+                    mDataBinding.videoItem3,
+                    mDataBinding.videoItem4
+            };
+
+            for (int i = 0; i < mVideoKeys.length && i < mVideoItems.length; i++) {
+                mDataBinding.videosLabel.setVisibility(View.VISIBLE);
+                mVideoItems[i].videoItemFrameLayout.setVisibility(View.VISIBLE);
+                mVideoItems[i].textViewVideoName.setText(mVideoNames[i]);
+            }
+
+            String reviewAuthorsArray = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_REVIEWS_AUTHORS));
+            String[] reviewAuthors = ListUtil.convertStringToArray(reviewAuthorsArray, ListUtil.DELIMITER);
+            String reviewContensArray = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_REVIEWS_CONTENTS));
+            String[] reviewContents = ListUtil.convertStringToArray(reviewContensArray, ListUtil.DELIMITER);
+            Log.i(TAG, reviewAuthorsArray);
+
+            Log.i(TAG, "reviewAuthors length: " + reviewAuthors.length);
+            if (reviewAuthors.length > 0) {
+                mDataBinding.reviewsLabel.setVisibility(View.VISIBLE);
+                mDataBinding.reviews.setVisibility(View.VISIBLE);
+
+
+                String reviews = "";
+                for (int i = 0; i < reviewAuthors.length; i++) {
+                    reviews += "<b>" + reviewAuthors[i] + ":  </b>\n" +
+                            reviewContents[i] + "\n\n";
+                }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                mDataBinding.reviews.setText(Html.fromHtml(reviews, Html.FROM_HTML_MODE_COMPACT));
+            } else {
+                mDataBinding.reviews.setText(Html.fromHtml(reviews));
+            }
+//                mDataBinding.reviews.setText(reviews);
+
+            }
+        }
 
         mDataBinding.textViewTitle.setText(title);
         mDataBinding.originalTitle.setText(originalTitle);
@@ -214,6 +280,26 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
+    public void onClickVideo(View view) {
+        Log.i(TAG, "View: " + view.getId());
+        if (mVideoKeys == null) return;
+
+        switch (view.getId()) {
+            case R.id.videoItem1:
+                watchYoutubeVideo(mVideoKeys[0]);
+                break;
+            case R.id.videoItem2:
+                watchYoutubeVideo(mVideoKeys[1]);
+                break;
+            case R.id.videoItem3:
+                watchYoutubeVideo(mVideoKeys[2]);
+                break;
+            case R.id.videoItem4:
+                watchYoutubeVideo(mVideoKeys[3]);
+                break;
+        }
+    }
+
     public void onClickFavourite(View view) {
         if (sIsFavourite) {
             mDataBinding.imageButtonFavourite.setImageResource(R.drawable.ic_star_border_blue);
@@ -231,6 +317,93 @@ public class DetailActivity extends AppCompatActivity {
             sIsFavourite = true;
             Uri uri = getContentResolver().insert(MovieEntry.CONTENT_URI_FAVOURITES, mValues);
             Log.i(TAG, "Added to Favourites: " + uri);
+        }
+    }
+
+public Loader<ContentValues> onCreateLoader(int id, final Bundle args) {
+    return new AsyncTaskLoader<ContentValues>(this) {
+
+        //cached data
+        ContentValues cachedDetails;
+
+        @Override
+        protected void onStartLoading() {
+            if (args == null) return;
+            if (!args.containsKey(MOVIE_ID_KEY)) return;
+
+            if (cachedDetails != null) {
+                deliverResult(cachedDetails);
+            } else {
+                forceLoad();
+            }
+        }
+
+        @Override
+        public ContentValues loadInBackground() {
+            String movieId = args.getString(MOVIE_ID_KEY);
+
+            try {
+                return NetworkUtils.getDetailsFromMovieId(movieId);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        public void deliverResult(ContentValues data) {
+            cachedDetails = data;
+            super.deliverResult(data);
+        }
+    };
+}
+
+    @Override
+    public void onLoadFinished(Loader<ContentValues> loader, ContentValues data) {
+        if (data == null) return;
+
+        String where = "movie_id=?";
+        String[] selectionArgs = new String[]{mMovieId};
+
+        int rowsPopular = getContentResolver().update(
+                MovieEntry.CONTENT_URI,
+                data,
+                where,
+                selectionArgs
+        );
+        int rowsTopRated = getContentResolver().update(
+                MovieEntry.CONTENT_URI_TOP_RATED,
+                data,
+                where,
+                selectionArgs
+        );
+        int rowsFavourites = getContentResolver().update(
+                MovieEntry.CONTENT_URI_FAVOURITES,
+                data,
+                where,
+                selectionArgs
+        );
+        Log.i(TAG, "rows updated popular: " + rowsPopular);
+        Log.i(TAG, "rows updated top rated: " + rowsTopRated);
+        Log.i(TAG, "rows updated favourites: " + rowsFavourites);
+
+        loadDataFromDB();
+    }
+
+    @Override
+    public void onLoaderReset(Loader<ContentValues> loader) {
+    }
+
+    public void watchYoutubeVideo(String id){
+        if (TextUtils.isEmpty(id)) return;
+
+        Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + id));
+        Intent webIntent = new Intent(Intent.ACTION_VIEW,
+                Uri.parse("http://www.youtube.com/watch?v=" + id));
+        try {
+            startActivity(appIntent);
+        } catch (ActivityNotFoundException ex) {
+            startActivity(webIntent);
         }
     }
 }

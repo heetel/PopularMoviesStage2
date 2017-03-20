@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <FrameLayout
+        android:id="@+id/videoItemFrameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onClickVideo"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_play_circle_filled_black_24dp" />
+
+            <TextView
+                android:id="@+id/textViewVideoName"
+                style="@style/TvVideoName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Teaser Trailer 1" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</layout>

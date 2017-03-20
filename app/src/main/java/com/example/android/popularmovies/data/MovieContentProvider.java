@@ -11,6 +11,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.Loader;
 import android.util.Log;
 
 /**
@@ -276,9 +277,54 @@ public class MovieContentProvider extends ContentProvider {
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
         final SQLiteDatabase db = mMovieDBHelper.getWritableDatabase();
 
+        //Keep track of if an update occurs
+        int rowsUpdated;
+
+        // match code
         int match = sUriMatcher.match(uri);
-        //TODO implement
-        throw new UnsupportedOperationException();
+        Log.i(TAG, "match: " + match);
+        switch (match) {
+            case MOVIES_WITH_ID:
+                //update a single task by getting the id
+                String id = uri.getPathSegments().get(1);
+                //using selections
+                rowsUpdated = db.update(
+                        MovieContract.MovieEntry.TABLE_NAME, values, "_id=?", new String[]{id});
+                break;
+            case MOVIES:
+                rowsUpdated = db.update(
+                        MovieContract.MovieEntry.TABLE_NAME,
+                        values,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            case TOP_RATED:
+                rowsUpdated = db.update(
+                        MovieContract.MovieEntry.TABLE_NAME_TOP_RATED,
+                        values,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            case FAVOURITES:
+                rowsUpdated = db.update(
+                        MovieContract.MovieEntry.TABLE_NAME_FAVOURITES,
+                        values,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+
+        if (rowsUpdated != 0) {
+            //set notifications if a task was updated
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        // return number of tasks updated
+        return rowsUpdated;
     }
 
     @Override

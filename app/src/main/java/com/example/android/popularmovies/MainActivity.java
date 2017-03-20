@@ -49,7 +49,6 @@ public class MainActivity extends AppCompatActivity
     private ProgressBar pbLoadingIndicator;
     private Menu menu;
     MovieAdapter mAdapter;
-    ArrayList<Movie> mMovies;
     private Context mContext;
 
     private static int page = 1;
@@ -100,14 +99,14 @@ public class MainActivity extends AppCompatActivity
         Log.i(TAG, "intent action: " + action);
         switch (getIntent().getAction()) {
             case QUICKSTART_POPULAR:
-                sActiveTable = CODE_POPULAR;
+                setPopular();
                 break;
             case QUICKSTART_TOP_RATED:
-                sActiveTable = CODE_TOP_RATED;
+                setTopRated();
                 break;
             case QUICKSTART_FAVOURITES:
                 Log.i(TAG, "Quickstart Favourites");
-                sActiveTable = CODE_FAVOURITES;
+                setFavourites();
                 break;
             default:
         }
@@ -262,14 +261,15 @@ public class MainActivity extends AppCompatActivity
             public boolean onMenuItemClick(MenuItem menuItem) {
                 if (menuItem.getItemId() == R.id.action_popular) {
                     Log.i(TAG, "MenuItem popular clicked");
-                    loadPopular();
+                    setPopular();
                 } else if (menuItem.getItemId() == R.id.action_top_rated) {
                     Log.i(TAG, "MenuItem top rated clicked");
-                    loadTopRated();
+                    setTopRated();
                 } else if (menuItem.getItemId() == R.id.action_favourites) {
                     Log.i(TAG, "MenuItem Favourites clicked");
-                    loadFavourites();
+                    setFavourites();
                 }
+                loadFromDB();
                 updateSelectorTitle();
                 return false;
             }
@@ -277,32 +277,18 @@ public class MainActivity extends AppCompatActivity
         popupMenu.show();
     }
 
-    private void loadPopular() {
-//        MenuItem miFilter = menu.findItem(R.id.action_filter);
-//        String popular = getResources().getString(R.string.popular);
-//        miFilter.setTitle(popular);
+    private void setPopular() {
         NetworkUtils.setPopular();
-        page = 1;
         sActiveTable = CODE_POPULAR;
-        loadFromDB();
-        rvMovies.scrollToPosition(0);
     }
 
-    private void loadTopRated() {
+    private void setTopRated() {
         NetworkUtils.setTopRated();
-        page = 1;
-        mMovies = null;
         sActiveTable = CODE_TOP_RATED;
-        loadFromDB();
-        rvMovies.scrollToPosition(0);
     }
 
-    private void loadFavourites() {
-//        MenuItem miFilter = menu.findItem(R.id.action_filter);
-//        miFilter.setTitle("Favourites");
+    private void setFavourites() {
         sActiveTable = CODE_FAVOURITES;
-        loadFromDB();
-        rvMovies.scrollToPosition(0);
     }
 
     private boolean isOnline() {
@@ -470,7 +456,6 @@ public class MainActivity extends AppCompatActivity
         MenuItem miFilter = menu.findItem(R.id.action_filter);
         switch (sActiveTable) {
             case CODE_POPULAR:
-//                String popular = getResources().getString(R.string.popular);
                 miFilter.setTitle(R.string.popular);
                 break;
             case CODE_TOP_RATED:

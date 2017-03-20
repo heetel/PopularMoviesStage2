@@ -47,16 +47,23 @@ import java.util.Scanner;
  */
 public class NetworkUtils {
 
+    private static final String TAG = NetworkUtils.class.getSimpleName();
+
     private final static String THEMOVIEDB_BASE_URL_POPULAR =
             "https://api.themoviedb.org/3/movie/popular";
     private final static String THEMOVIEDB_BASE_URL_TOP_RATED =
             "https://api.themoviedb.org/3/movie/top_rated";
+    private final static String THEMOVIEDB_BASE_URL_MOVIE =
+            "https://api.themoviedb.org/3/movie/";
+
+    private final static String THEMOVIEDB_PATH_VIDEOS = "videos";
+    private final static String THEMOVIEDB_PATH_REVIEWS = "reviews";
 
     //used to switch between upper urls.
     private static String active_url = THEMOVIEDB_BASE_URL_POPULAR;
 
     private final static String PARAM_API = "api_key";
-    private final static String API = "";//insert your API Key here.
+    private final static String API = "1de56c3d596be90580d20262de5d3bdd";//insert your API Key here.
     private final static String LANGUAGE_KEY = "language";
     private final static String PAGE_KEY = "page";
 
@@ -72,6 +79,149 @@ public class NetworkUtils {
         return active_url.equals(THEMOVIEDB_BASE_URL_POPULAR);
     }
 
+    private static URL buildVideosUrl(String movidId) {
+        if (TextUtils.isEmpty(API))
+            return null;
+
+        Uri builtUri = Uri.parse(THEMOVIEDB_BASE_URL_MOVIE).buildUpon()
+                .appendPath(movidId)
+                .appendPath(THEMOVIEDB_PATH_VIDEOS)
+                .appendQueryParameter(PARAM_API, API)
+                .appendQueryParameter(LANGUAGE_KEY, getLanguage()).build();
+
+        try {
+            return new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static URL buildReviewsUrl(String movieId) {
+        if (TextUtils.isEmpty(API)) return null;
+
+        Uri builtUri = Uri.parse(THEMOVIEDB_BASE_URL_MOVIE).buildUpon()
+                .appendPath(movieId)
+                .appendPath(THEMOVIEDB_PATH_REVIEWS)
+                .appendQueryParameter(PARAM_API, API)
+                .appendQueryParameter(LANGUAGE_KEY, getLanguage()).build();
+
+        try {
+            return new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static ContentValues getDetailsFromMovieId(String movieId)
+            throws IOException{
+        URL videosUrl = buildVideosUrl(movieId);
+        if (videosUrl == null) return null;
+
+        ContentValues details = null;
+
+        HttpURLConnection connection = (HttpURLConnection) videosUrl.openConnection();
+        try {
+            InputStream in = connection.getInputStream();
+
+            Scanner scanner = new Scanner(in);
+            scanner.useDelimiter("\\A");
+
+            if (scanner.hasNext()) {
+                String scan = scanner.next();
+                details = getVideosFromJSON(scan);
+            }
+        } finally {
+            connection.disconnect();
+        }
+
+        //load reviews and append to ContentValues
+
+        URL reviewsUrl = buildReviewsUrl(movieId);
+        if (reviewsUrl == null) return details;
+        Log.i(TAG, reviewsUrl.toString());
+
+        connection = (HttpURLConnection) reviewsUrl.openConnection();
+        try {
+            InputStream in = connection.getInputStream();
+
+            Scanner scanner = new Scanner(in);
+            scanner.useDelimiter("\\A");
+
+            if (scanner.hasNext()) {
+                String scan = scanner.next();
+                ContentValues values = appendReviewsToContentValues(details, scan);
+//                Log.i(TAG, values.getAsString(MovieEntry.COLUMN_REVIEWS_AUTHORS));
+                return values;
+            }
+        } finally {
+            connection.disconnect();
+        }
+
+        return details;
+    }
+
+    private static ContentValues getVideosFromJSON(String jsonString) {
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            JSONArray results = jsonObject.getJSONArray("results");
+
+            ContentValues contentValues = new ContentValues();
+
+            String[] names = new String[results.length()];
+            String[] keys = new String[results.length()];
+
+            for (int i = 0; i < results.length(); i++) {
+                JSONObject result = results.getJSONObject(i);
+
+                String name = result.getString("name");
+                String key = result.getString("key");
+                names[i] = name;
+                keys[i] = key;
+            }
+            String delimiter = ",";
+            contentValues.put(MovieEntry.COLUMN_VIDEOS_NAMES,
+                    ListUtil.convertArrayToString(names, delimiter));
+            contentValues.put(MovieEntry.COLUMN_VIDEOS_KEYS,
+                    ListUtil.convertArrayToString(keys, delimiter));
+
+            return contentValues;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static ContentValues appendReviewsToContentValues(ContentValues values, String jsonString) {
+        try {
+            JSONObject jsonObject = new JSONObject((jsonString));
+            JSONArray results = jsonObject.getJSONArray("results");
+
+            String[] authors = new String[results.length()];
+            String[] contents = new String[results.length()];
+
+            for (int i = 0; i < results.length(); i++) {
+                JSONObject result = results.getJSONObject(i);
+
+                String author = result.getString("author");
+                Log.i(TAG, "author: " +author);
+                String content = result.getString("content");
+                authors[i] = author;
+                contents[i] = content;
+            }
+            values.put(MovieEntry.COLUMN_REVIEWS_AUTHORS,
+                    ListUtil.convertArrayToString(authors, ListUtil.DELIMITER));
+            Log.i(TAG, ListUtil.convertArrayToString(authors, ListUtil.DELIMITER));
+            values.put(MovieEntry.COLUMN_REVIEWS_CONTENTS,
+                    ListUtil.convertArrayToString(contents, ListUtil.DELIMITER));
+            return values;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return values;
+        }
+    }
+
     /**
      * Builds the URL used to query TheMovieDB.
      *
@@ -82,7 +232,7 @@ public class NetworkUtils {
         if (TextUtils.isEmpty(API))
             return null;
 
-        String language = Locale.getDefault().getLanguage();
+        String language = getLanguage();
         Log.i("lang: ", language);
         Uri builtUri = Uri.parse(active_url).buildUpon()
                 .appendQueryParameter(PARAM_API, API)
@@ -97,6 +247,10 @@ public class NetworkUtils {
         }
 
         return url;
+    }
+
+    private static String getLanguage() {
+        return Locale.getDefault().getLanguage();
     }
 
     /**

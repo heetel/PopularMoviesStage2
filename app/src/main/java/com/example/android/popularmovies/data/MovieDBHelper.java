@@ -16,7 +16,7 @@ public class MovieDBHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "moviesDb.db";
 
     // If you change the database schema, you must increment the database version
-    private static final int VERSION = 6;
+    private static final int VERSION = 9;
 
     public MovieDBHelper(Context context) {
         super(context, DATABASE_NAME, null, VERSION);
@@ -56,6 +56,10 @@ public class MovieDBHelper extends SQLiteOpenHelper {
                 MovieEntry.COLUMN_RELEASE_DATE + " TEXT, " +
                 MovieEntry.COLUMN_VOTE_AVERAGE + " TEXT, " +
                 MovieEntry.COLUMN_POSTER_PATH + " TEXT, " +
-                MovieEntry.COLUMN_BACKDROP_PATH + " TEXT);";
+                MovieEntry.COLUMN_BACKDROP_PATH + " TEXT, " +
+                MovieEntry.COLUMN_VIDEOS_NAMES + " TEXT, " +
+                MovieEntry.COLUMN_VIDEOS_KEYS + " TEXT, " +
+                MovieEntry.COLUMN_REVIEWS_AUTHORS + " TEXT, " +
+                MovieEntry.COLUMN_REVIEWS_CONTENTS + " TEXT);";
     }
 }

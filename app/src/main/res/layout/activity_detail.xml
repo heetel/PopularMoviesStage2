@@ -58,63 +58,66 @@
                     android:id="@+id/imageViewPoster"
                     android:layout_width="160dp"
                     android:layout_height="240dp"
+                    android:layout_below="@+id/linearLayoutVideos"
                     android:layout_marginLeft="16dp"
-                    android:layout_marginTop="24dp"
+                    android:layout_marginStart="11dp"
+                    android:layout_marginTop="13dp"
+                    android:layout_toEndOf="@+id/videosLabel"
                     app:srcCompat="@color/cardview_dark_background" />
 
                 <TextView
                     android:id="@+id/date"
+                    style="@style/TvContent"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="1973-03-14"
-                    style="@style/TvContent"
+                    android:layout_alignBottom="@+id/imageViewPoster"
                     android:layout_toRightOf="@+id/imageViewPoster"
-                    android:layout_alignBottom="@+id/imageViewPoster"/>
+                    tools:text="1973-03-14" />
 
                 <TextView
                     android:id="@+id/dateLabel"
+                    style="@style/TvLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/release_date"
-                    style="@style/TvLabel"
                     android:layout_above="@id/date"
-                    android:layout_alignStart="@+id/date"/>
+                    android:layout_alignStart="@+id/date"
+                    android:text="@string/release_date" />
 
                 <TextView
                     android:id="@+id/vote"
+                    style="@style/TvContent"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="8.3"
-                    style="@style/TvContent"
                     android:layout_above="@+id/dateLabel"
-                    android:layout_alignStart="@+id/date"/>
+                    android:layout_alignStart="@+id/date"
+                    tools:text="8.3" />
 
                 <TextView
                     android:id="@+id/voteLabel"
+                    style="@style/TvLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/vote_average"
-                    style="@style/TvLabel"
                     android:layout_above="@id/vote"
-                    android:layout_alignStart="@+id/date"/>
+                    android:layout_alignStart="@+id/date"
+                    android:text="@string/vote_average" />
 
                 <TextView
                     android:id="@+id/originalTitle"
+                    style="@style/TvContent"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="The Godfather"
-                    style="@style/TvContent"
                     android:layout_above="@+id/voteLabel"
-                    android:layout_alignStart="@+id/date"/>
+                    android:layout_alignStart="@+id/date"
+                    tools:text="The Godfather" />
 
                 <TextView
                     android:id="@+id/originalTitleLabel"
+                    style="@style/TvLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/original_title"
-                    style="@style/TvLabel"
                     android:layout_above="@id/originalTitle"
-                    android:layout_alignStart="@+id/date"/>
+                    android:layout_alignStart="@+id/date"
+                    android:text="@string/original_title" />
 
                 <TextView
                     android:id="@+id/overviewLabel"
@@ -132,23 +135,96 @@
                     style="@style/TvContent"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/overviewLabel"
                     android:layout_alignParentStart="true"
-                    app:layout_constraintTop_toBottomOf="@id/overviewLabel"
+                    android:layout_below="@id/overviewLabel"
                     app:layout_constraintLeft_toLeftOf="@+id/overviewLabel"
+                    app:layout_constraintTop_toBottomOf="@id/overviewLabel"
                     tools:text="The Godfather" />
 
                 <ImageButton
                     android:id="@+id/imageButtonFavourite"
                     android:layout_width="60dp"
                     android:layout_height="60dp"
-                    android:layout_marginEnd="19dp"
-                    android:scaleType="centerCrop"
-                    app:srcCompat="@drawable/ic_star_border_blue"
-                    android:layout_alignTop="@id/imageViewPoster"
                     android:layout_alignParentEnd="true"
+                    android:layout_alignTop="@id/imageViewPoster"
+                    android:layout_marginEnd="19dp"
                     android:background="@android:color/transparent"
-                    android:onClick="onClickFavourite"/>
+                    android:onClick="onClickFavourite"
+                    android:scaleType="centerCrop"
+                    app:srcCompat="@drawable/ic_star_border_blue" />
+
+                <TextView
+                    android:id="@+id/videosLabel"
+                    style="@style/TvLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/overview"
+                    android:text="@string/videos"
+                    android:visibility="visible"
+                    app:layout_constraintStart_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/imageViewPoster" />
+
+                <FrameLayout
+                    android:id="@+id/containerVideos"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/videosLabel">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <include
+                            android:id="@+id/videoItem1"
+                            layout="@layout/video_item"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                        <include
+                            android:id="@+id/videoItem2"
+                            layout="@layout/video_item"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                        <include
+                            android:id="@+id/videoItem3"
+                            layout="@layout/video_item"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                        <include
+                            android:id="@+id/videoItem4"
+                            layout="@layout/video_item"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                    </LinearLayout>
+
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/reviewsLabel"
+                    style="@style/TvLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/containerVideos"
+                    android:text="@string/reviews"
+                    android:visibility="visible" />
+
+                <TextView
+                    android:id="@+id/reviews"
+                    style="@style/TvContent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@id/reviewsLabel"
+                    android:visibility="visible"
+                    app:layout_constraintLeft_toLeftOf="@+id/overviewLabel"
+                    app:layout_constraintTop_toBottomOf="@id/overviewLabel"
+                    tools:text="Very nice, I think 9/10" />
 
             </RelativeLayout>
 
