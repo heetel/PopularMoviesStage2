@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -151,9 +150,7 @@ public class NetworkUtils {
 
             if (scanner.hasNext()) {
                 String scan = scanner.next();
-                ContentValues values = appendReviewsToContentValues(details, scan);
-//                Log.i(TAG, values.getAsString(MovieEntry.COLUMN_REVIEWS_AUTHORS));
-                return values;
+                return appendReviewsToContentValues(details, scan);
             }
         } finally {
             connection.disconnect();
@@ -260,7 +257,7 @@ public class NetworkUtils {
      * @return The Movies as an Array of the HTTP response.
      * @throws IOException Related to network and stream reading
      */
-    public static ArrayList<ContentValues> getMoviesFromHttpUrl(Context context, URL url) throws IOException {
+    public static ArrayList<ContentValues> getMoviesFromHttpUrl(URL url) throws IOException {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         try {
             InputStream in = urlConnection.getInputStream();
@@ -270,7 +267,7 @@ public class NetworkUtils {
 
             if (scanner.hasNext()) {
                 String scan = scanner.next();
-                return getMovieArrayFromJSON(context, scan);
+                return getMovieArrayFromJSON(scan);
             } else {
                 return null;
             }
@@ -285,7 +282,7 @@ public class NetworkUtils {
      * @param jsonString the json to parse the movies
      * @return ArrayList of Movie objects containing title, date, etc.
      */
-    private static ArrayList<ContentValues> getMovieArrayFromJSON(Context context, String jsonString) {
+    private static ArrayList<ContentValues> getMovieArrayFromJSON(String jsonString) {
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
             JSONArray results = jsonObject.getJSONArray("results");

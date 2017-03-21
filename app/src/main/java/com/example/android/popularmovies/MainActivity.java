@@ -34,7 +34,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 /**
- * API-Key:
+ * Created by Julian Heetel
  */
 public class MainActivity extends AppCompatActivity
         implements MovieAdapter.ListItemCallbackListener,
@@ -50,7 +50,6 @@ public class MainActivity extends AppCompatActivity
     private ProgressBar pbLoadingIndicator;
     private Menu menu;
     MovieAdapter mAdapter;
-    private Context mContext;
 
     private static int page = 1;
     private static final String PAGE_KEY = "page-key";
@@ -58,6 +57,8 @@ public class MainActivity extends AppCompatActivity
     public static int sColumnCount = 2;
 
     private static final int NUM_LIST_ITEMS = 20;
+
+    //API provides 20 results per page
     private static final int RESULTS_PER_PAGE = 20;
 
     private static final String KEY_CURRENT_SCROLLPOSITION = "key-current-scollposition";
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity
     public static final int CODE_POPULAR = 1231;
     public static final int CODE_TOP_RATED = 1232;
     public static final int CODE_FAVOURITES = 1233;
-    private static int sActiveTable = CODE_POPULAR;
+    private static int sActiveTable;
 
     private static int sCurrentScrollPosition = 0;
     private static int sRestoredScrollPosition = 0;
@@ -76,9 +77,9 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //initialize RecyclerView and Adapter
         rvMovies = (RecyclerView) findViewById(R.id.rv_movies);
-        pbLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
-
+            //RecyclerView displays 2 or 3 Columns depending on devices orientation
         sColumnCount = 2;
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
             sColumnCount = 3;
@@ -92,10 +93,11 @@ public class MainActivity extends AppCompatActivity
         rvMovies.setAdapter(mAdapter);
 
         //start at beginning
-        page = 1;
+//        page = 1;
 
-        mContext = this;
+        pbLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
+        //In case the App started from Nougat launcher shortcut, apply table name to query
         String action = getIntent().getAction();
         Log.i(TAG, "intent action: " + action);
         switch (getIntent().getAction()) {
@@ -106,12 +108,13 @@ public class MainActivity extends AppCompatActivity
                 setTopRated();
                 break;
             case QUICKSTART_FAVOURITES:
-                Log.i(TAG, "Quickstart Favourites");
                 setFavourites();
                 break;
             default:
+                setPopular();
         }
 
+        //restore lastly shown table and scroll position in RecyclerView
         if (savedInstanceState != null) {
             if (savedInstanceState.containsKey(KEY_ACTIVE_TABLE)) {
                 sActiveTable = savedInstanceState.getInt(KEY_ACTIVE_TABLE);
@@ -124,6 +127,7 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
+        //Query ContentProvider
         loadFromDB();
     }
 
@@ -139,6 +143,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        //save current shown table and scroll position in RecyclerView
         outState.putInt(KEY_ACTIVE_TABLE, sActiveTable);
         Log.i(TAG, "saved active table");
         int scroll = sCurrentScrollPosition;
@@ -146,16 +151,17 @@ public class MainActivity extends AppCompatActivity
         Log.i(TAG, "saved scroll position: " + scroll);
     }
 
+    /**
+     * Callback method from Adapter that is called when the user clicks a movie
+     * @param movieId movie_id for DetailActivity to query the right movie data
+     */
     @Override
-    public void onListItemClick(Cursor cursor, int clickedItemIndex) {
-        Log.d(TAG, "onListItemClick called #" + clickedItemIndex);
+    public void onListItemClick(String movieId) {
+        Intent intent = new Intent(this, DetailActivity.class);
 
-        Context context = MainActivity.this;
-        Intent intent = new Intent(context, DetailActivity.class);
+        intent.putExtra(DetailActivity.INTENT_MOVIE_ID_KEY, movieId);
 
-        intent.putExtra(DetailActivity.INDEX_KEY, clickedItemIndex);
-
-        intent.putExtra(DetailActivity.TABLE_KEY, sActiveTable);
+        intent.putExtra(DetailActivity.INTENT_TABLE_KEY, sActiveTable);
 
         startActivity(intent);
     }
@@ -170,17 +176,29 @@ public class MainActivity extends AppCompatActivity
         loadFromNetwork();
     }
 
+    /**
+     * This Callback method from MovieAdapter is called for every single movie, the Adapter
+     * loads. It gives the position of RecyclerView that will be needed to save instance bundle
+     * @param position current position of RecyclerView
+     */
     @Override
     public void updatePosition(int position) {
         sCurrentScrollPosition = position;
     }
 
+    /**
+     * Query data from ContentProvider in background task and
+     * Update the UI.
+     */
     private void loadFromDB() {
         Log.i(TAG, "loadFromDB called");
 
         new MovieFromDBTask().execute();
     }
 
+    /**
+     * Load data from API in background task into ContentProvider
+     */
     private void loadFromNetwork() {
 
         //check internet connection
@@ -213,14 +231,11 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Log.i(TAG, "onOptionsItemSelected called");
         if (item.getItemId() == R.id.action_refresh) {
-            Log.i(TAG, "refresh called");
             clearDB();
             loadFromDB();
             return true;
         } else if (item.getItemId() == R.id.action_filter) {
-            Log.i(TAG, "action_filter clicked");
             showPopup();
         } else if (item.getItemId() == R.id.action_remove_all_favourites) {
             showRemoveFavouritesDialog();
@@ -228,13 +243,25 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Delete current table in ContentProvider
+     * (Favourites won't be deleted.)
+     */
     private void clearDB() {
+        //don't delete favourites
+        if (sActiveTable == CODE_FAVOURITES) return;
         int rows = getContentResolver().delete(getActiveTableUri(sActiveTable), null, null);
         mAdapter.setMovies(null);
         page = 1;
         Log.i(TAG, rows + " rows deleted");
     }
 
+    /**
+     * Get the Content URI for the table depending on the constant key in MainActivity.
+     * Default is the Content URI for table popular.
+     * @param key Key that should match one of MainActivitys table keys.
+     * @return Content Uri depending on key
+     */
     public static Uri getActiveTableUri(int key) {
         switch (key) {
             case CODE_POPULAR:
@@ -248,6 +275,9 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Show options menu to select table to be displayed.
+     */
     public void showPopup() {
         final View menuItemView = findViewById(R.id.action_filter);
         android.widget.PopupMenu popupMenu = new android.widget.PopupMenu(MainActivity.this, menuItemView);
@@ -274,20 +304,33 @@ public class MainActivity extends AppCompatActivity
         popupMenu.show();
     }
 
+    /**
+     * Sets current table to popular
+     */
     private void setPopular() {
         NetworkUtils.setPopular();
         sActiveTable = CODE_POPULAR;
     }
 
+    /**
+     * Sets current table to top rated
+     */
     private void setTopRated() {
         NetworkUtils.setTopRated();
         sActiveTable = CODE_TOP_RATED;
     }
 
+    /**
+     * Sets current table to favourites
+     */
     private void setFavourites() {
         sActiveTable = CODE_FAVOURITES;
     }
 
+    /**
+     * Check if device is connected to the internet.
+     * @return true if device is connected to the internet, else false.
+     */
     private boolean isOnline() {
         ConnectivityManager cm =
                 (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -295,6 +338,9 @@ public class MainActivity extends AppCompatActivity
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
+    /**
+     * Display Dialog to indicate the user, that the device is offline.
+     */
     private void showNoConnectionDialog() {
         String noConnection = getResources().getString(R.string.no_connection);
         String tryAgain = getResources().getString(R.string.try_again);
@@ -309,18 +355,16 @@ public class MainActivity extends AppCompatActivity
                 }).show();
     }
 
-
     @Override
     public Loader<ArrayList<ContentValues>> onCreateLoader(int id, final Bundle args) {
-        return new AsyncTaskLoader<ArrayList<ContentValues>>(mContext) {
+        return new AsyncTaskLoader<ArrayList<ContentValues>>(this) {
 
             //Cached data
             ArrayList<ContentValues> cachedMovies;
 
             @Override
             protected void onStartLoading() {
-                if (args == null)
-                    return;
+                if (args == null) return;
 
                 if (cachedMovies != null) {
                     deliverResult(cachedMovies);
@@ -341,7 +385,7 @@ public class MainActivity extends AppCompatActivity
                 //build URL and get Response
                 URL movieRequestUrl = NetworkUtils.buildUrl(page);
                 try {
-                    return NetworkUtils.getMoviesFromHttpUrl(mContext, movieRequestUrl);
+                    return NetworkUtils.getMoviesFromHttpUrl(movieRequestUrl);
                 } catch (Exception e) {
                     e.printStackTrace();
                     return null;
@@ -360,17 +404,18 @@ public class MainActivity extends AppCompatActivity
     public void onLoadFinished(Loader<ArrayList<ContentValues>> loader, ArrayList<ContentValues> movies) {
     pbLoadingIndicator.setVisibility(View.INVISIBLE);
 
+        //insert data into ContentProvider
         if (movies != null) {
             //bulkInsert movies to DB
             ContentValues[] contentValues = ListUtil.makeContentValuesArray(movies);
             int rowsInserted = 0;
             switch (sActiveTable) {
                 case CODE_POPULAR:
-                    rowsInserted = mContext.getContentResolver()
+                    rowsInserted = getContentResolver()
                             .bulkInsert(MovieContract.MovieEntry.CONTENT_URI, contentValues);
                     break;
                 case CODE_TOP_RATED:
-                    rowsInserted = mContext.getContentResolver().bulkInsert(
+                    rowsInserted = getContentResolver().bulkInsert(
                             MovieContract.MovieEntry.CONTENT_URI_TOP_RATED, contentValues);
                     break;
             }
@@ -384,7 +429,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onLoaderReset(Loader<ArrayList<ContentValues>> loader) {
-
     }
 
     private class MovieFromDBTask extends AsyncTask<Uri, Void, Cursor> {
@@ -436,20 +480,23 @@ public class MainActivity extends AppCompatActivity
                 sRestoredScrollPosition = 0;
             }
             if (cursor!= null && sActiveTable != CODE_FAVOURITES) {
+                //calculate page number to load from API on next load.
                 page = (cursor.getCount() / RESULTS_PER_PAGE);
                 page++;
                 Log.i(TAG, "page updated to " + page);
 
+                // if loaded data from ContentProvider is empty, load data from API
                 if (page == 1) {
                     //DB is still empty
                     loadFromNetwork();
                 }
             }
-
-//            updateSelectorTitle();
         }
     }
 
+    /**
+     * Update the options items title depending on current table
+     */
     private void updateSelectorTitle() {
         MenuItem miFilter = menu.findItem(R.id.action_filter);
         switch (sActiveTable) {
@@ -467,6 +514,9 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Dialog for the user to confirm deleting all favourites
+     */
     private void showRemoveFavouritesDialog() {
         new AlertDialog.Builder(this)
                 .setTitle(getString(R.string.remove_all_favourites) + "?")
@@ -480,6 +530,9 @@ public class MainActivity extends AppCompatActivity
                 .create().show();
     }
 
+    /**
+     * Delete favourites table of ContentProvider
+     */
     private void removeFavourites() {
         getContentResolver().delete(
                 MovieContract.MovieEntry.CONTENT_URI_FAVOURITES,

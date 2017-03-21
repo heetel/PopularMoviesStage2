@@ -35,7 +35,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
     final private ListItemCallbackListener mOnClickListener;
 
     public interface ListItemCallbackListener {
-        void onListItemClick(Cursor cursor, int clickedItemIndex);
+        void onListItemClick(String clickedItemIndex);
         void onLoadMore();
         void updatePosition(int position);
     }
@@ -52,13 +52,11 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         Context context = parent.getContext();
         int layoutIdForLisItem = R.layout.movie_list_item;
         LayoutInflater layoutInflater = LayoutInflater.from(context);
-        boolean shouldAttachToParentImmediately = false;
 
         View view = layoutInflater
-                .inflate(layoutIdForLisItem, parent, shouldAttachToParentImmediately);
-        MovieViewHolder viewHolder = new MovieViewHolder(view);
+                .inflate(layoutIdForLisItem, parent, false);
 
-        return viewHolder;
+        return new MovieViewHolder(view);
     }
 
     @Override
@@ -151,7 +149,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         @Override
         public void onClick(View view) {
             int clickedPosition = getAdapterPosition();
-            mOnClickListener.onListItemClick(mCursor, clickedPosition);
+            mCursor.moveToPosition(clickedPosition);
+            String movieId = mCursor.getString(mCursor.getColumnIndex(MovieEntry.COLUMN_MOVIE_ID));
+            Log.i(TAG, "clicked movie id: " + movieId);
+            mOnClickListener.onListItemClick(movieId);
         }
 
 

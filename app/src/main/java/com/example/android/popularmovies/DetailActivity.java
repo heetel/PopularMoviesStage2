@@ -33,16 +33,30 @@ import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 
+/**
+ * Created by Julian Heetel
+ *
+ * The DetailActivity loads the movie information from ContentProvider using index and table key
+ * from the Intent that started this Activity.
+ * In case the videos and reviews are not yet in the Database of the ContentProvider, this Activity
+ * loads the videos and reviews with a AsyncTaskLoader from the TheMovieDB API into the
+ * ContentProvider and then updates the UI.
+ */
 public class DetailActivity extends AppCompatActivity
     implements LoaderManager.LoaderCallbacks<ContentValues>{
 
     private final static String TAG = DetailActivity.class.getSimpleName();
 
+    //Keys for Intent
     public static final String INDEX_KEY = "index_key";
-    public static final String TABLE_KEY = "table_key";
+    public static final String INTENT_TABLE_KEY = "intent_table_key";
+    public static final String INTENT_MOVIE_ID_KEY = "intent_movie_id_key";
 
+    //for AsyncTaskLoader
     private final static int LOADER_ID = 420;
+    //Column key to query ContentProvider
     private static final String MOVIE_ID_KEY = "movie_id_key";
+
 
     private int mIndex;
     private boolean sIsFavourite;
@@ -76,11 +90,11 @@ public class DetailActivity extends AppCompatActivity
 
     private void loadDataFromDB() {
         Intent intent = getIntent();
-        if (!intent.hasExtra(INDEX_KEY) || !intent.hasExtra(TABLE_KEY))
+        if (!intent.hasExtra(INTENT_MOVIE_ID_KEY) || !intent.hasExtra(INTENT_TABLE_KEY))
             return;
-        mIndex = intent.getIntExtra(INDEX_KEY, 0);
+        mMovieId = intent.getStringExtra(INTENT_MOVIE_ID_KEY);
 
-        int mTableKey = intent.getIntExtra(TABLE_KEY, MainActivity.CODE_POPULAR);
+        int mTableKey = intent.getIntExtra(INTENT_TABLE_KEY, MainActivity.CODE_POPULAR);
 
         Uri uri = MainActivity.getActiveTableUri(mTableKey);
 
@@ -97,8 +111,8 @@ public class DetailActivity extends AppCompatActivity
             return getContentResolver().query(
                     params[0],
                     null,
-                    null,
-                    null,
+                    MovieEntry.COLUMN_MOVIE_ID + "=?",
+                    new String[]{mMovieId},
                     null
             );
 
@@ -106,6 +120,7 @@ public class DetailActivity extends AppCompatActivity
 
         @Override
         protected void onPostExecute(Cursor cursor) {
+            Log.i(TAG, "onPostExecute: cursor length: " + cursor.getCount());
             updateUI(cursor);
 //            loadDetails();
         }
@@ -148,9 +163,10 @@ public class DetailActivity extends AppCompatActivity
     }
 
     private void updateUI(Cursor cursor) {
-        cursor.moveToPosition(mIndex);
+        if (cursor == null) return;
 
-        mMovieId = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_MOVIE_ID));
+        cursor.moveToFirst();
+
         String title = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_TITLE));
         String releaseDate = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_RELEASE_DATE));
         String vote = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_VOTE_AVERAGE));
