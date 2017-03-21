@@ -15,24 +15,9 @@
         app:showAsAction="never"/>
 
     <item
-        android:id="@+id/action_load_from_network"
-        android:title="Load from Network"
-        android:visible="false"
+        android:id="@+id/action_remove_all_favourites"
+        android:title="@string/remove_all_favourites"
         android:orderInCategory="3"
-        app:showAsAction="never"/>
-
-    <item
-        android:id="@+id/action_load_from_db"
-        android:title="Load from DB"
-        android:visible="false"
-        android:orderInCategory="4"
-        app:showAsAction="never"/>
-
-    <item
-        android:id="@+id/action_clear_db"
-        android:title="Clear DB"
-        android:visible="false"
-        android:orderInCategory="5"
         app:showAsAction="never"/>
 
 </menu>

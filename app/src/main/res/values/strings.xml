@@ -7,7 +7,6 @@
     <string name="vote_average">Vote average</string>
     <string name="release_date">Release date</string>
     <string name="overview">Overview</string>
-    <string name="average_vote" translatable="false"></string>
     <string name="no_connection">No internet connection</string>
     <string name="try_again">Try again</string>
     <string name="request_internet_connection">Please connect to the internet.</string>
@@ -16,4 +15,13 @@
     <string name="favourites">Favourites</string>
     <string name="videos">Videos</string>
     <string name="reviews">Reviews</string>
+    <string name="added_to_favourites">Added to favourites</string>
+    <string name="removed_from_favourites">Removed from favourites</string>
+    <string name="no_videos">No videos available</string>
+    <string name="no_reviews">No reviews available</string>
+    <string name="remove_all_favourites">Remove all favourites</string>
+    <string name="delete">delete</string>
+    <string name="cancel">cancel</string>
+    <string name="remove">remove</string>
+    <string name="favourites_removed">favourites removed</string>
 </resources>

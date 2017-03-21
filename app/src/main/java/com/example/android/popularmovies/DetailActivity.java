@@ -11,6 +11,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -31,7 +32,6 @@ import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 public class DetailActivity extends AppCompatActivity
     implements LoaderManager.LoaderCallbacks<ContentValues>{
@@ -48,8 +48,7 @@ public class DetailActivity extends AppCompatActivity
     private boolean sIsFavourite;
     private ContentValues mValues;
     private String mMovieId;
-    private String[] mVideoNames, mVideoKeys;
-    private VideoItemBinding[] mVideoItems;
+    private String[] mVideoKeys;
     ActivityDetailBinding mDataBinding;
 
     @Override
@@ -63,7 +62,8 @@ public class DetailActivity extends AppCompatActivity
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        getWindow().setNavigationBarColor(getResources().getColor(R.color.navigationBarColor));
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+            getWindow().setNavigationBarColor(getResourceColor(R.color.navigationBarColor));
 
         loadDataFromDB();
     }
@@ -165,21 +165,30 @@ public class DetailActivity extends AppCompatActivity
         if (videoNamesArray == null) {
             loadDetails();
         } else {
-            mVideoNames = ListUtil.convertStringToArray(videoNamesArray, ",");
+            String[] mVideoNames = ListUtil.convertStringToArray(videoNamesArray, ",");
             String videoKeysArray = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_VIDEOS_KEYS));
             mVideoKeys = ListUtil.convertStringToArray(videoKeysArray, ",");
 
-            mVideoItems = new VideoItemBinding[] {
+            VideoItemBinding[] mVideoItems = new VideoItemBinding[]{
                     mDataBinding.videoItem1,
                     mDataBinding.videoItem2,
                     mDataBinding.videoItem3,
-                    mDataBinding.videoItem4
+                    mDataBinding.videoItem4,
+                    mDataBinding.videoItem5
             };
 
+
+            mDataBinding.videosLabel.setVisibility(View.VISIBLE);
+
+            Log.i(TAG, "mVideoKeys length: " + mVideoKeys.length);
             for (int i = 0; i < mVideoKeys.length && i < mVideoItems.length; i++) {
-                mDataBinding.videosLabel.setVisibility(View.VISIBLE);
                 mVideoItems[i].videoItemFrameLayout.setVisibility(View.VISIBLE);
                 mVideoItems[i].textViewVideoName.setText(mVideoNames[i]);
+            }
+
+            if (TextUtils.isEmpty(mVideoKeys[0])) {
+                mVideoItems[0].videoItemFrameLayout.setVisibility(View.GONE);
+                mDataBinding.noVideos.setVisibility(View.VISIBLE);
             }
 
             String reviewAuthorsArray = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_REVIEWS_AUTHORS));
@@ -196,17 +205,21 @@ public class DetailActivity extends AppCompatActivity
 
                 String reviews = "";
                 for (int i = 0; i < reviewAuthors.length; i++) {
-                    reviews += "<b>" + reviewAuthors[i] + ":  </b>\n" +
-                            reviewContents[i] + "\n\n";
+                    reviews += "<b>" + reviewAuthors[i] + ":  </b><br>" +
+                            reviewContents[i] + "<br><br>";
                 }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                mDataBinding.reviews.setText(Html.fromHtml(reviews, Html.FROM_HTML_MODE_COMPACT));
-            } else {
-                mDataBinding.reviews.setText(Html.fromHtml(reviews));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    mDataBinding.reviews.setText(Html.fromHtml(reviews, Html.FROM_HTML_MODE_COMPACT));
+                } else {
+                    //noinspection deprecation
+                    mDataBinding.reviews.setText(Html.fromHtml(reviews));
+                }
             }
-//                mDataBinding.reviews.setText(reviews);
 
+            if (TextUtils.isEmpty(reviewContents[0])) {
+                mDataBinding.reviews.setVisibility(View.GONE);
+                mDataBinding.noReviews.setVisibility(View.VISIBLE);
             }
         }
 
@@ -225,6 +238,9 @@ public class DetailActivity extends AppCompatActivity
                 "https://image.tmdb.org/t/p/w500" +
                         posterPath)
                 .into(mDataBinding.imageViewPoster);
+
+//        Animation animation = AnimationUtils.loadAnimation(this, R.anim.anim_scale_backdrop);
+//        mDataBinding.imageViewBackdrop.startAnimation(animation);
 
         scaleBackdrop();
 
@@ -257,7 +273,7 @@ public class DetailActivity extends AppCompatActivity
             width = displaymetrics.widthPixels;
         }
         else {
-            width = ((int) (displaymetrics.widthPixels * 0.7));
+            width = mDataBinding.frameLayoutBackdrop.getMeasuredWidth();
         }
         Log.i(TAG, "width = " + width);
         int height = ((int) (width * 0.562));
@@ -297,6 +313,9 @@ public class DetailActivity extends AppCompatActivity
             case R.id.videoItem4:
                 watchYoutubeVideo(mVideoKeys[3]);
                 break;
+            case R.id.videoItem5:
+                watchYoutubeVideo(mVideoKeys[4]);
+                break;
         }
     }
 
@@ -304,7 +323,8 @@ public class DetailActivity extends AppCompatActivity
         if (sIsFavourite) {
             mDataBinding.imageButtonFavourite.setImageResource(R.drawable.ic_star_border_blue);
             sIsFavourite = false;
-            Toast.makeText(this, "Removed from Favourites", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.removed_from_favourites),
+                    Toast.LENGTH_SHORT).show();
             int rows = getContentResolver().delete(
                     MovieEntry.CONTENT_URI_FAVOURITES,
                     MovieEntry.COLUMN_MOVIE_ID + "=?",
@@ -313,7 +333,8 @@ public class DetailActivity extends AppCompatActivity
             Log.i(TAG, rows + " rows deleted");
         } else {
             mDataBinding.imageButtonFavourite.setImageResource(R.drawable.ic_star_blue);
-            Toast.makeText(this, "Added to Favourites", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.added_to_favourites),
+                    Toast.LENGTH_SHORT).show();
             sIsFavourite = true;
             Uri uri = getContentResolver().insert(MovieEntry.CONTENT_URI_FAVOURITES, mValues);
             Log.i(TAG, "Added to Favourites: " + uri);
@@ -334,6 +355,7 @@ public Loader<ContentValues> onCreateLoader(int id, final Bundle args) {
             if (cachedDetails != null) {
                 deliverResult(cachedDetails);
             } else {
+                mDataBinding.pbDetailLoadingIndicator.setVisibility(View.VISIBLE);
                 forceLoad();
             }
         }
@@ -360,6 +382,7 @@ public Loader<ContentValues> onCreateLoader(int id, final Bundle args) {
 
     @Override
     public void onLoadFinished(Loader<ContentValues> loader, ContentValues data) {
+        mDataBinding.pbDetailLoadingIndicator.setVisibility(View.INVISIBLE);
         if (data == null) return;
 
         String where = "movie_id=?";
@@ -394,7 +417,7 @@ public Loader<ContentValues> onCreateLoader(int id, final Bundle args) {
     public void onLoaderReset(Loader<ContentValues> loader) {
     }
 
-    public void watchYoutubeVideo(String id){
+    private void watchYoutubeVideo(String id){
         if (TextUtils.isEmpty(id)) return;
 
         Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + id));
@@ -405,5 +428,13 @@ public Loader<ContentValues> onCreateLoader(int id, final Bundle args) {
         } catch (ActivityNotFoundException ex) {
             startActivity(webIntent);
         }
+    }
+
+    private int getResourceColor(int color) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            return ContextCompat.getColor(this, color);
+        else
+            //noinspection deprecation
+            return getResources().getColor(color);
     }
 }

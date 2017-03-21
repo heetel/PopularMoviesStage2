@@ -14,7 +14,7 @@ public class ListUtil {
 
     private static final String TAG = ListUtil.class.getSimpleName();
 
-    public static final String DELIMITER = "$%";
+    public static final String DELIMITER = ",delimiter,";
 
     public static ContentValues[] makeContentValuesArray(ArrayList<ContentValues> values) {
         ContentValues[] array = new ContentValues[values.size()];

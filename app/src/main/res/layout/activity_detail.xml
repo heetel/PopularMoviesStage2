@@ -29,11 +29,13 @@
                     <ImageView
                         android:id="@+id/imageViewBackdrop"
                         android:layout_width="match_parent"
-                        android:layout_height="250dp"
+                        android:layout_height="match_parent"
                         android:scaleType="centerCrop"
+                        android:adjustViewBounds="true"
                         app:layout_constraintLeft_toLeftOf="parent"
                         app:layout_constraintRight_toRightOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:contentDescription="" />
                 </FrameLayout>
 
                 <TextView
@@ -52,17 +54,16 @@
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/activity_detail_body_horizontal_margin"
+                android:layout_marginEnd="@dimen/activity_detail_body_horizontal_margin">
 
                 <ImageView
                     android:id="@+id/imageViewPoster"
                     android:layout_width="160dp"
                     android:layout_height="240dp"
-                    android:layout_below="@+id/linearLayoutVideos"
-                    android:layout_marginLeft="16dp"
                     android:layout_marginStart="11dp"
                     android:layout_marginTop="13dp"
-                    android:layout_toEndOf="@+id/videosLabel"
                     app:srcCompat="@color/cardview_dark_background" />
 
                 <TextView
@@ -71,8 +72,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignBottom="@+id/imageViewPoster"
-                    android:layout_toRightOf="@+id/imageViewPoster"
-                    tools:text="1973-03-14" />
+                    android:layout_toEndOf="@+id/imageViewPoster"
+                    tools:text="1973-03-14"
+                    tools:ignore="RelativeOverlap" />
 
                 <TextView
                     android:id="@+id/dateLabel"
@@ -143,8 +145,8 @@
 
                 <ImageButton
                     android:id="@+id/imageButtonFavourite"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_alignParentEnd="true"
                     android:layout_alignTop="@id/imageViewPoster"
                     android:layout_marginEnd="19dp"
@@ -152,6 +154,16 @@
                     android:onClick="onClickFavourite"
                     android:scaleType="centerCrop"
                     app:srcCompat="@drawable/ic_star_border_blue" />
+
+                <ProgressBar
+                    android:id="@+id/pb_detail_loading_indicator"
+                    android:layout_width="@dimen/progressbar_size"
+                    android:layout_height="@dimen/progressbar_size"
+                    android:layout_gravity=""
+                    android:visibility="invisible"
+                    android:indeterminateTint="@android:color/white"
+                    android:layout_below="@+id/overview"
+                    android:layout_toEndOf="@+id/imageViewPoster" />
 
                 <TextView
                     android:id="@+id/videosLabel"
@@ -161,20 +173,19 @@
                     android:layout_alignParentStart="true"
                     android:layout_below="@+id/overview"
                     android:text="@string/videos"
-                    android:visibility="visible"
-                    app:layout_constraintStart_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/imageViewPoster" />
+                    android:visibility="invisible" />
 
-                <FrameLayout
-                    android:id="@+id/containerVideos"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/videosLabel">
+                <!--<FrameLayout-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_below="@+id/videosLabel">-->
 
                     <LinearLayout
+                        android:id="@+id/containerVideos"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:layout_below="@+id/videosLabel">
 
                         <include
                             android:id="@+id/videoItem1"
@@ -200,9 +211,23 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
 
+                        <include
+                            android:id="@+id/videoItem5"
+                            layout="@layout/video_item"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            android:id="@+id/noVideos"
+                            style="@style/TvNotAvailable"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:visibility="gone"
+                            android:text="@string/no_videos" />
+
                     </LinearLayout>
 
-                </FrameLayout>
+                <!--</FrameLayout>-->
 
                 <TextView
                     android:id="@+id/reviewsLabel"
@@ -212,7 +237,7 @@
                     android:layout_alignParentStart="true"
                     android:layout_below="@+id/containerVideos"
                     android:text="@string/reviews"
-                    android:visibility="visible" />
+                    android:visibility="invisible" />
 
                 <TextView
                     android:id="@+id/reviews"
@@ -221,10 +246,22 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
                     android:layout_below="@id/reviewsLabel"
-                    android:visibility="visible"
+                    android:visibility="invisible"
                     app:layout_constraintLeft_toLeftOf="@+id/overviewLabel"
                     app:layout_constraintTop_toBottomOf="@id/overviewLabel"
-                    tools:text="Very nice, I think 9/10" />
+                    tools:text="Very nice, I think 9/10"/>
+
+                <TextView
+                    android:id="@+id/noReviews"
+                    style="@style/TvNotAvailable"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:text="@string/no_reviews"
+                    android:layout_below="@+id/reviewsLabel"
+                    android:layout_alignParentStart="true"/>
+
+
 
             </RelativeLayout>
 

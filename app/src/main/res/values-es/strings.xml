@@ -16,4 +16,13 @@
     <string name="favourites">Favoritos</string>
     <string name="reviews">Comentarios</string>
     <string name="videos">Videos</string>
+    <string name="added_to_favourites">Añadido a favoritos</string>
+    <string name="removed_from_favourites">Eliminado de favoritos</string>
+    <string name="no_videos">No hay videos disponibles</string>
+    <string name="no_reviews">No hay comentaios disponibles</string>
+    <string name="remove_all_favourites">Eliminar todos los favoritos</string>
+    <string name="delete">suprimir</string>
+    <string name="cancel">cancelar</string>
+    <string name="remove">suprimir</string>
+    <string name="favourites_removed">Favoritos suprimido</string>
 </resources>

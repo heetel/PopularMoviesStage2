@@ -24,6 +24,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.example.android.popularmovies.data.MovieContract;
 import com.example.android.popularmovies.utilities.ListUtil;
@@ -221,12 +222,8 @@ public class MainActivity extends AppCompatActivity
         } else if (item.getItemId() == R.id.action_filter) {
             Log.i(TAG, "action_filter clicked");
             showPopup();
-        } else if (item.getItemId() == R.id.action_clear_db) {
-            clearDB();
-        } else if (item.getItemId() == R.id.action_load_from_network) {
-            loadFromNetwork();
-        } else if (item.getItemId() == R.id.action_load_from_db) {
-            loadFromDB();
+        } else if (item.getItemId() == R.id.action_remove_all_favourites) {
+            showRemoveFavouritesDialog();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -417,12 +414,13 @@ public class MainActivity extends AppCompatActivity
                             null
                     );
                 case CODE_FAVOURITES:
+                    // query in reverse order (DESC) to display most recent added favourite first
                     return  getContentResolver().query(
                             MovieContract.MovieEntry.CONTENT_URI_FAVOURITES,
                             null,
                             null,
                             null,
-                            null
+                            "_ID DESC"
                     );
                 default:
                     return null;
@@ -467,5 +465,29 @@ public class MainActivity extends AppCompatActivity
             default:
                 miFilter.setTitle(R.string.popular);
         }
+    }
+
+    private void showRemoveFavouritesDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle(getString(R.string.remove_all_favourites) + "?")
+                .setPositiveButton(R.string.remove, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        removeFavourites();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .create().show();
+    }
+
+    private void removeFavourites() {
+        getContentResolver().delete(
+                MovieContract.MovieEntry.CONTENT_URI_FAVOURITES,
+                null,
+                null
+        );
+        mAdapter.setMovies(null);
+        Toast.makeText(this, getString(R.string.favourites_removed), Toast.LENGTH_SHORT).show();
+        // make Snackbar instead of Toast
     }
 }

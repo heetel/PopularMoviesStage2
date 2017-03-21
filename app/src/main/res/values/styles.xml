@@ -35,7 +35,9 @@
 
     <style name="TvVideoName" parent="TvContent">
         <item name="android:textSize">20sp</item>
-        <item name="android:paddingBottom">0dp</item>
+        <item name="android:paddingBottom">16dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:drawablePadding">16dp</item>
         <item name="android:textIsSelectable">false</item>
     </style>
 
@@ -44,6 +46,10 @@
         <item name="android:textColor">@android:color/primary_text_dark</item>
         <item name="android:background">@color/colorTitleBackground</item>
         <item name="android:textIsSelectable">true</item>
+    </style>
+
+    <style name="TvNotAvailable" parent="TvContent">
+        <item name="android:fontFamily">serif-monospace</item>
     </style>
 
 </resources>
