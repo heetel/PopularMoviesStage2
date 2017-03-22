@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.databinding.DataBindingUtil;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -48,7 +49,6 @@ public class DetailActivity extends AppCompatActivity
     private final static String TAG = DetailActivity.class.getSimpleName();
 
     //Keys for Intent
-    public static final String INDEX_KEY = "index_key";
     public static final String INTENT_TABLE_KEY = "intent_table_key";
     public static final String INTENT_MOVIE_ID_KEY = "intent_movie_id_key";
 
@@ -57,8 +57,6 @@ public class DetailActivity extends AppCompatActivity
     //Column key to query ContentProvider
     private static final String MOVIE_ID_KEY = "movie_id_key";
 
-
-    private int mIndex;
     private boolean sIsFavourite;
     private ContentValues mValues;
     private String mMovieId;
@@ -82,12 +80,18 @@ public class DetailActivity extends AppCompatActivity
         loadDataFromDB();
     }
 
+    /**
+     * Load trailers and reviews from API
+     */
     private void loadDetails() {
         Bundle bundle = new Bundle();
         bundle.putString(MOVIE_ID_KEY, mMovieId);
         getSupportLoaderManager().initLoader(LOADER_ID, bundle, this);
     }
 
+    /**
+     * Load data from ContentProvider
+     */
     private void loadDataFromDB() {
         Intent intent = getIntent();
         if (!intent.hasExtra(INTENT_MOVIE_ID_KEY) || !intent.hasExtra(INTENT_TABLE_KEY))
@@ -122,7 +126,6 @@ public class DetailActivity extends AppCompatActivity
         protected void onPostExecute(Cursor cursor) {
             Log.i(TAG, "onPostExecute: cursor length: " + cursor.getCount());
             updateUI(cursor);
-//            loadDetails();
         }
     }
 
@@ -162,6 +165,11 @@ public class DetailActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Update UI with data from cursor
+     * If tha data doesn't contain trailers and reviews, loadDetails() will be called.
+     * @param cursor data
+     */
     private void updateUI(Cursor cursor) {
         if (cursor == null) return;
 
@@ -177,7 +185,7 @@ public class DetailActivity extends AppCompatActivity
         String overview = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_OVERVIEW));
 
         String videoNamesArray = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_VIDEOS_NAMES));
-//        Log.i(TAG, "Video Names: " + videoNamesArray);
+
         if (videoNamesArray == null) {
             loadDetails();
         } else {
@@ -192,7 +200,6 @@ public class DetailActivity extends AppCompatActivity
                     mDataBinding.videoItem4,
                     mDataBinding.videoItem5
             };
-
 
             mDataBinding.videosLabel.setVisibility(View.VISIBLE);
 
@@ -255,13 +262,14 @@ public class DetailActivity extends AppCompatActivity
                         posterPath)
                 .into(mDataBinding.imageViewPoster);
 
-//        Animation animation = AnimationUtils.loadAnimation(this, R.anim.anim_scale_backdrop);
-//        mDataBinding.imageViewBackdrop.startAnimation(animation);
-
         scaleBackdrop();
 
         //Check if shown movie is a favourite and update the favourite ImageButton
         new CheckFavouritesTask().execute(mMovieId);
+
+        //Apply custom font
+        Typeface font = Typeface.createFromAsset(getAssets(), "Ubuntu-L.ttf");
+        mDataBinding.textViewTitle.setTypeface(font);
 
         //put data into ContentValues
         mValues = new ContentValues();
@@ -275,6 +283,9 @@ public class DetailActivity extends AppCompatActivity
         mValues.put(MovieEntry.COLUMN_OVERVIEW, overview);
     }
 
+    /**
+     * Adjust height of backdrop ImageView depending on screen width
+     */
     private void scaleBackdrop() {
 
         ViewGroup.LayoutParams params = mDataBinding.frameLayoutBackdrop.getLayoutParams();
@@ -297,7 +308,6 @@ public class DetailActivity extends AppCompatActivity
         Log.i(TAG, "height = " + height);
 
         mDataBinding.frameLayoutBackdrop.setLayoutParams(params);
-
     }
 
     @Override

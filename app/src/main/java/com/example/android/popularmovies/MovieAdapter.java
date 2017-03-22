@@ -22,9 +22,9 @@ import com.example.android.popularmovies.data.MovieContract.MovieEntry;
  * Created by Julian Heetel on 18.01.2017.
  */
 
-public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
+class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
 
-    public static final String TAG = MovieAdapter.class.getSimpleName();
+    private static final String TAG = MovieAdapter.class.getSimpleName();
 
     private int mNumberItems;
 
@@ -34,13 +34,13 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
     final private ListItemCallbackListener mOnClickListener;
 
-    public interface ListItemCallbackListener {
+    interface ListItemCallbackListener {
         void onListItemClick(String clickedItemIndex);
         void onLoadMore();
         void updatePosition(int position);
     }
 
-    public MovieAdapter(int numberItems, ListItemCallbackListener listener, Context context) {
+    MovieAdapter(int numberItems, ListItemCallbackListener listener, Context context) {
         super();
         this.mNumberItems = numberItems;
         this.mOnClickListener = listener;
@@ -80,7 +80,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         TextView tvListItemNumber;
         ImageView ivThumbnail;
 
-        public MovieViewHolder(View itemView) {
+        MovieViewHolder(View itemView) {
             super(itemView);
 
             tvListItemNumber = (TextView) itemView.findViewById(R.id.tv_list_item_number);
@@ -92,14 +92,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         }
 
         void bind(int listIndex) {
-//            Log.i("MovieViewHolder", "bind called: n" + listIndex);
             if (mCursor == null) {
                 tvListItemNumber.setText(String.valueOf(listIndex));
             } else {
                 tvListItemNumber.setVisibility(View.GONE);
-
-//                Movie mov = movies.get(listIndex);
-//                tvListItemNumber.setText(mov.getTitle());
 
                 mCursor.moveToPosition(listIndex);
 
@@ -111,37 +107,23 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                         "https://image.tmdb.org/t/p/w500" +
                         posterPath)
                         .into(ivThumbnail);
-
-                //Log.i(TAG, mov.getPosterPath());
-
-                int imageHeight = ivThumbnail.getHeight();
-                int imageWidth = ivThumbnail.getWidth();
-//                Log.i("image", imageWidth + "x" + imageHeight);
-                //LayoutParams
-                //ivThumbnail.setLayoutParams();
             }
         }
 
+        /**
+         * Adjust movie item height depending on screen width and number of columns
+         */
         private void adjustThumbnailHeight() {
-            // DONE adjust item height height = width * 1.5
-
             FrameLayout layout = (FrameLayout) itemView.findViewById(R.id.layout_item);
             ViewGroup.LayoutParams params = layout.getLayoutParams();
-            int height = params.height;
-//            Log.i(TAG, "layout height: " + height);
-//            Log.i(TAG, "thumbnail height: " + ivThumbnail.getHeight());
-//            Log.i(TAG, "thumbnail width : " + ivThumbnail.getWidth());
 
             DisplayMetrics displaymetrics = new DisplayMetrics();
             ((Activity)context).getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
-            height = displaymetrics.heightPixels;
             int width = displaymetrics.widthPixels;
-//            Log.i(TAG,"display: "+height+"x"+width);
 
             double newWidthD = (width / MainActivity.sColumnCount) * 1.5;
-            int newWidthInt = (int) newWidthD;
 
-            params.height = newWidthInt;
+            params.height = (int) newWidthD;
 
             layout.setLayoutParams(params);
         }
@@ -158,7 +140,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
     }
 
-    public void setMovies(Cursor cursor) {
+    void setMovies(Cursor cursor) {
         mCursor = cursor;
 
         if (cursor != null) {

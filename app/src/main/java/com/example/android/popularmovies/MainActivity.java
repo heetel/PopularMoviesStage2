@@ -35,6 +35,14 @@ import java.util.ArrayList;
 
 /**
  * Created by Julian Heetel
+ *
+ * This app doesn't need internet connection every time the user wants to see popular movies.
+ * On initial launch, there will be 20 items (popular / top rated) loaded from API and saved into
+ * ContentProvider. When the user scrolls down close to the end of the list, there will be 20 more
+ * items loaded and so on. That data will persist until the user clicks "Refresh" in the options
+ * menu or reset the apps storage.
+ *
+ * When this app starts,
  */
 public class MainActivity extends AppCompatActivity
         implements MovieAdapter.ListItemCallbackListener,
@@ -56,14 +64,17 @@ public class MainActivity extends AppCompatActivity
 
     public static int sColumnCount = 2;
 
+    //number of list items to setup RecyclerViewAdapter
     private static final int NUM_LIST_ITEMS = 20;
 
     //API provides 20 results per page
     private static final int RESULTS_PER_PAGE = 20;
 
+    //keys for saveInstanceBundle
     private static final String KEY_CURRENT_SCROLLPOSITION = "key-current-scollposition";
-
     private static final String KEY_ACTIVE_TABLE = "key-active-table";
+
+    //internal table keys
     public static final int CODE_POPULAR = 1231;
     public static final int CODE_TOP_RATED = 1232;
     public static final int CODE_FAVOURITES = 1233;

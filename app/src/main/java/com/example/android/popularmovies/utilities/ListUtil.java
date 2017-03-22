@@ -24,7 +24,7 @@ public class ListUtil {
         return array;
     }
 
-    public static String convertArrayToString(String[] array, String delimiter){
+    static String convertArrayToString(String[] array, String delimiter){
         String str = "";
         for (int i = 0;i<array.length; i++) {
             str = str+array[i];
@@ -36,10 +36,7 @@ public class ListUtil {
         return str;
     }
     public static String[] convertStringToArray(String str, String delimiter){
-//        Log.i(TAG, "toArray input: " + str);
-        String[] arr = str.split(delimiter);
-//        Log.i(TAG, "output length: " + arr.length);
-        return arr;
+        return str.split(delimiter);
     }
 
 }

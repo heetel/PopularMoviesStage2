@@ -16,7 +16,6 @@
 package com.example.android.popularmovies.utilities;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
@@ -78,12 +77,20 @@ public class NetworkUtils {
         return active_url.equals(THEMOVIEDB_BASE_URL_POPULAR);
     }
 
-    private static URL buildVideosUrl(String movidId) {
+    /**
+     * Build URL to get videos:
+     *
+     * https://api.themoviedb.org/3/movie/{movie_id}/videos?api_key=<<api_key>>&language=en-US
+     *
+     * @param movieId movie id
+     * @return built URL
+     */
+    private static URL buildVideosUrl(String movieId) {
         if (TextUtils.isEmpty(API))
             return null;
 
         Uri builtUri = Uri.parse(THEMOVIEDB_BASE_URL_MOVIE).buildUpon()
-                .appendPath(movidId)
+                .appendPath(movieId)
                 .appendPath(THEMOVIEDB_PATH_VIDEOS)
                 .appendQueryParameter(PARAM_API, API)
                 .appendQueryParameter(LANGUAGE_KEY, getLanguage()).build();
@@ -96,6 +103,14 @@ public class NetworkUtils {
         return null;
     }
 
+    /**
+     * Build URL to get reviews:
+     *
+     * https://api.themoviedb.org/3/movie/{movie_id}/reviews?api_key=<<api_key>>&language=en-US
+     *
+     * @param movieId movie id
+     * @return built URL
+     */
     private static URL buildReviewsUrl(String movieId) {
         if (TextUtils.isEmpty(API)) return null;
 
@@ -113,6 +128,12 @@ public class NetworkUtils {
         return null;
     }
 
+    /**
+     * Get ContentValues containing the movies details: videos and reviews
+     * @param movieId movie id
+     * @return ContentValues with videos and reviews
+     * @throws IOException Error on requesting Html response
+     */
     public static ContentValues getDetailsFromMovieId(String movieId)
             throws IOException{
         URL videosUrl = buildVideosUrl(movieId);
@@ -159,6 +180,11 @@ public class NetworkUtils {
         return details;
     }
 
+    /**
+     * Parse data from a json into ContentValues
+     * @param jsonString input json
+     * @return ContentValues containing videos
+     */
     private static ContentValues getVideosFromJSON(String jsonString) {
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
@@ -190,6 +216,11 @@ public class NetworkUtils {
         }
     }
 
+    /**
+     * Parse data from a json into ContentValues
+     * @param jsonString input json
+     * @return ContentValues containing reviews
+     */
     private static ContentValues appendReviewsToContentValues(ContentValues values, String jsonString) {
         try {
             JSONObject jsonObject = new JSONObject((jsonString));
@@ -246,6 +277,10 @@ public class NetworkUtils {
         return url;
     }
 
+    /**
+     * Get system language
+     * @return system language
+     */
     private static String getLanguage() {
         return Locale.getDefault().getLanguage();
     }
@@ -277,10 +312,10 @@ public class NetworkUtils {
     }
 
     /**
-     * This Method makes an ArrayList of Movie objects from a json String.
+     * This Method makes an ArrayList of ContentValues from a json String.
      *
      * @param jsonString the json to parse the movies
-     * @return ArrayList of Movie objects containing title, date, etc.
+     * @return ArrayList of ContentValues containing title, date, etc.
      */
     private static ArrayList<ContentValues> getMovieArrayFromJSON(String jsonString) {
         try {

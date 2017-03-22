@@ -23,6 +23,8 @@
         <item name="android:textColor">@color/mColorLabel</item>
         <item name="android:paddingLeft">16dp</item>
         <item name="android:paddingTop">12dp</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+        <!--<item name="android:fontFamily">sans-serif-condensed</item>-->
     </style>
 
     <style name="TvContent">
@@ -39,6 +41,7 @@
         <item name="android:paddingTop">8dp</item>
         <item name="android:drawablePadding">16dp</item>
         <item name="android:textIsSelectable">false</item>
+        <item name="android:fontFamily">sans-serif-light</item>
     </style>
 
     <style name="TvTitle">
@@ -46,10 +49,13 @@
         <item name="android:textColor">@android:color/primary_text_dark</item>
         <item name="android:background">@color/colorTitleBackground</item>
         <item name="android:textIsSelectable">true</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+        <!--<item name="android:textStyle">italic</item>-->
     </style>
 
     <style name="TvNotAvailable" parent="TvContent">
-        <item name="android:fontFamily">serif-monospace</item>
+        <item name="android:fontFamily">sans-serif-thin</item>
+        <item name="android:textStyle">italic</item>
     </style>
 
 </resources>
