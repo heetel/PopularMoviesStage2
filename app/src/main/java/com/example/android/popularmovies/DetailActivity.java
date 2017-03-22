@@ -20,6 +20,7 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +34,7 @@ import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
+import java.net.URL;
 
 /**
  * Created by Julian Heetel
@@ -206,7 +208,7 @@ public class DetailActivity extends AppCompatActivity
             Log.i(TAG, "mVideoKeys length: " + mVideoKeys.length);
             for (int i = 0; i < mVideoKeys.length && i < mVideoItems.length; i++) {
                 mVideoItems[i].videoItemFrameLayout.setVisibility(View.VISIBLE);
-                mVideoItems[i].textViewVideoName.setText(mVideoNames[i]);
+                mVideoItems[i].textViewVideoName.setText("\t" + mVideoNames[i]);
             }
 
             if (TextUtils.isEmpty(mVideoKeys[0])) {
@@ -311,12 +313,20 @@ public class DetailActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.detail, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 // app icon in action bar clicked; goto parent activity.
                 this.finish();
                 return true;
+            case R.id.action_open_in_web:
+                openInWeb();
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -462,5 +472,13 @@ public Loader<ContentValues> onCreateLoader(int id, final Bundle args) {
         else
             //noinspection deprecation
             return getResources().getColor(color);
+    }
+
+    private void openInWeb() {
+        String baseUrl = "https://www.themoviedb.org/movie/";
+        Uri uri = Uri.parse(baseUrl + mMovieId);
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(uri);
+        startActivity(i);
     }
 }

@@ -25,4 +25,5 @@
     <string name="cancel">abbrechen</string>
     <string name="remove">löschen</string>
     <string name="favourites_removed">Favouriten gelöscht</string>
+    <string name="open_in_web">Im Web öffnen</string>
 </resources>

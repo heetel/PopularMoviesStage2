@@ -20,6 +20,13 @@
             android:drawableStart="@drawable/ic_play_circle_filled_black_24dp"
             tools:text="Teaser Trailer 1" />
 
+        <!--<Button-->
+            <!--android:id="@+id/textViewVideoName"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:drawableStart="@drawable/ic_play_circle_filled_black_24dp"-->
+            <!--style="@style/ButtonVideo"/>-->
+
     </FrameLayout>
 
 </layout>
