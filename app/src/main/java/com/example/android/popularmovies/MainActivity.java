@@ -1,12 +1,14 @@
 package com.example.android.popularmovies;
 
 import android.app.AlertDialog;
+import android.app.SearchManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -14,15 +16,21 @@ import android.os.AsyncTask;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -46,7 +54,8 @@ import java.util.ArrayList;
  */
 public class MainActivity extends AppCompatActivity
         implements MovieAdapter.ListItemCallbackListener,
-        LoaderManager.LoaderCallbacks<ArrayList<ContentValues>> {
+        LoaderManager.LoaderCallbacks<ArrayList<ContentValues>>,
+        android.support.v7.widget.SearchView.OnQueryTextListener{
 
     private final String TAG = MainActivity.class.getSimpleName();
 
@@ -83,6 +92,10 @@ public class MainActivity extends AppCompatActivity
     private static int sCurrentScrollPosition = 0;
     private static int sRestoredScrollPosition = 0;
 
+    private String[] mPlanetTitles;
+    private DrawerLayout mDrawerLayout;
+    private ListView mDrawerList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,6 +120,23 @@ public class MainActivity extends AppCompatActivity
 //        page = 1;
 
         pbLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
+//        mPlanetTitles = getResources().getStringArray(R.array.planets_array);
+        mPlanetTitles = new String[]{"bla" ,"blub"};
+//        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+//        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+
+//        // Set the adapter for the list view
+//        mDrawerList.setAdapter(new ArrayAdapter<String>(this,
+//                R.layout.video_item, mPlanetTitles));
+//        // Set the list's click listener
+//        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                Log.i(TAG, "onItemClick()");
+//            }
+//        });
+
+        handleIntent(getIntent());
 
         //In case the App started from Nougat launcher shortcut, apply table name to query
         String action = getIntent().getAction();
@@ -160,6 +190,12 @@ public class MainActivity extends AppCompatActivity
         int scroll = sCurrentScrollPosition;
         outState.putInt(KEY_CURRENT_SCROLLPOSITION, scroll);
         Log.i(TAG, "saved scroll position: " + scroll);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleIntent(intent);
     }
 
     /**
@@ -237,6 +273,15 @@ public class MainActivity extends AppCompatActivity
         getMenuInflater().inflate(R.menu.main, menu);
         this.menu = menu;
         updateSelectorTitle();
+
+        // Associate searchable configuration with the SearchView
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setIconifiedByDefault(false);
+        searchView.setOnQueryTextListener(this);
+//        searchView.setBackgroundColor(Color.WHITE);
+
         return true;
     }
 
@@ -442,6 +487,27 @@ public class MainActivity extends AppCompatActivity
     public void onLoaderReset(Loader<ArrayList<ContentValues>> loader) {
     }
 
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+
+        Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
+
+        // Check if no view has focus:
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        Log.i(TAG, "onQueryTextChange()" + newText);
+        return false;
+    }
+
     private class MovieFromDBTask extends AsyncTask<Uri, Void, Cursor> {
 
         @Override
@@ -553,5 +619,14 @@ public class MainActivity extends AppCompatActivity
         mAdapter.setMovies(null);
         Toast.makeText(this, getString(R.string.favourites_removed), Toast.LENGTH_SHORT).show();
         // make Snackbar instead of Toast
+    }
+
+    private void handleIntent(Intent intent) {
+
+        if (intent.getAction().equals(Intent.ACTION_SEARCH)) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
+        }
+
     }
 }
