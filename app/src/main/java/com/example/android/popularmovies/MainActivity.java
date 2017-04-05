@@ -37,25 +37,27 @@ import android.widget.Toast;
 import com.example.android.popularmovies.data.MovieContract;
 import com.example.android.popularmovies.utilities.ListUtil;
 import com.example.android.popularmovies.utilities.NetworkUtils;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 import java.net.URL;
 import java.util.ArrayList;
 
 /**
  * Created by Julian Heetel
- *
+ * <p>
  * This app doesn't need internet connection every time the user wants to see popular movies.
  * On initial launch, there will be 20 items (popular / top rated) loaded from API and saved into
  * ContentProvider. When the user scrolls down close to the end of the list, there will be 20 more
  * items loaded and so on. That data will persist until the user clicks "Refresh" in the options
  * menu or reset the apps storage.
- *
+ * <p>
  * When this app starts,
  */
 public class MainActivity extends AppCompatActivity
         implements MovieAdapter.ListItemCallbackListener,
         LoaderManager.LoaderCallbacks<ArrayList<ContentValues>>,
-        android.support.v7.widget.SearchView.OnQueryTextListener{
+        android.support.v7.widget.SearchView.OnQueryTextListener {
 
     private final String TAG = MainActivity.class.getSimpleName();
 
@@ -89,6 +91,8 @@ public class MainActivity extends AppCompatActivity
     public static final int CODE_FAVOURITES = 1233;
     private static int sActiveTable;
 
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+
     private static int sCurrentScrollPosition = 0;
     private static int sRestoredScrollPosition = 0;
 
@@ -103,7 +107,7 @@ public class MainActivity extends AppCompatActivity
 
         //initialize RecyclerView and Adapter
         rvMovies = (RecyclerView) findViewById(R.id.rv_movies);
-            //RecyclerView displays 2 or 3 Columns depending on devices orientation
+        //RecyclerView displays 2 or 3 Columns depending on devices orientation
         sColumnCount = 2;
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
             sColumnCount = 3;
@@ -121,7 +125,7 @@ public class MainActivity extends AppCompatActivity
 
         pbLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 //        mPlanetTitles = getResources().getStringArray(R.array.planets_array);
-        mPlanetTitles = new String[]{"bla" ,"blub"};
+        mPlanetTitles = new String[]{"bla", "blub"};
 //        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 //        mDrawerList = (ListView) findViewById(R.id.left_drawer);
 
@@ -168,6 +172,12 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
+        if (!checkPlayServices()) {
+            // This is where we could either prompt a user that they should install
+            // the latest version of Google Play Services, or add an error snackbar
+            // that some features won't be available.
+        }
+
         //Query ContentProvider
         loadFromDB();
     }
@@ -200,6 +210,7 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * Callback method from Adapter that is called when the user clicks a movie
+     *
      * @param movieId movie_id for DetailActivity to query the right movie data
      */
     @Override
@@ -215,7 +226,6 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * This method gets called when the User scrolls down to the end of RecyclerView
-     *
      */
     @Override
     public void onLoadMore() {
@@ -226,11 +236,35 @@ public class MainActivity extends AppCompatActivity
     /**
      * This Callback method from MovieAdapter is called for every single movie, the Adapter
      * loads. It gives the position of RecyclerView that will be needed to save instance bundle
+     *
      * @param position current position of RecyclerView
      */
     @Override
     public void updatePosition(int position) {
         sCurrentScrollPosition = position;
+    }
+
+    /**
+     * +     * Check the device to make sure it has the Google Play Services APK. If
+     * +     * it doesn't, display a dialog that allows users to download the APK from
+     * +     * the Google Play Store or enable it in the device's system settings.
+     * +
+     */
+    private boolean checkPlayServices() {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.getErrorDialog(this, resultCode,
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            } else {
+                Log.i(TAG, "This device is not supported.");
+                finish();
+            }
+            return false;
+        }
+        Log.i(TAG, "checkPlayServices OK");
+        return true;
     }
 
     /**
@@ -275,11 +309,11 @@ public class MainActivity extends AppCompatActivity
         updateSelectorTitle();
 
         // Associate searchable configuration with the SearchView
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        searchView.setIconifiedByDefault(false);
-        searchView.setOnQueryTextListener(this);
+//        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+//        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+//        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+//        searchView.setIconifiedByDefault(false);
+//        searchView.setOnQueryTextListener(this);
 //        searchView.setBackgroundColor(Color.WHITE);
 
         return true;
@@ -315,6 +349,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * Get the Content URI for the table depending on the constant key in MainActivity.
      * Default is the Content URI for table popular.
+     *
      * @param key Key that should match one of MainActivitys table keys.
      * @return Content Uri depending on key
      */
@@ -385,6 +420,7 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * Check if device is connected to the internet.
+     *
      * @return true if device is connected to the internet, else false.
      */
     private boolean isOnline() {
@@ -458,7 +494,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onLoadFinished(Loader<ArrayList<ContentValues>> loader, ArrayList<ContentValues> movies) {
-    pbLoadingIndicator.setVisibility(View.INVISIBLE);
+        pbLoadingIndicator.setVisibility(View.INVISIBLE);
 
         //insert data into ContentProvider
         if (movies != null) {
@@ -495,7 +531,7 @@ public class MainActivity extends AppCompatActivity
         // Check if no view has focus:
         View view = this.getCurrentFocus();
         if (view != null) {
-            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
 
@@ -536,7 +572,7 @@ public class MainActivity extends AppCompatActivity
                     );
                 case CODE_FAVOURITES:
                     // query in reverse order (DESC) to display most recent added favourite first
-                    return  getContentResolver().query(
+                    return getContentResolver().query(
                             MovieContract.MovieEntry.CONTENT_URI_FAVOURITES,
                             null,
                             null,
@@ -556,7 +592,7 @@ public class MainActivity extends AppCompatActivity
                 rvMovies.scrollToPosition(sRestoredScrollPosition);
                 sRestoredScrollPosition = 0;
             }
-            if (cursor!= null && sActiveTable != CODE_FAVOURITES) {
+            if (cursor != null && sActiveTable != CODE_FAVOURITES) {
                 //calculate page number to load from API on next load.
                 page = (cursor.getCount() / RESULTS_PER_PAGE);
                 page++;

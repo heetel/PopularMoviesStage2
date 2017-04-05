@@ -16,7 +16,7 @@
             android:layout_height="match_parent"
             android:scrollbars="vertical" />
 
-        <!--android:scrollbarThumbVertical="@color/colorAccent"-->
+
 
         <ProgressBar
             android:id="@+id/pb_loading_indicator"
