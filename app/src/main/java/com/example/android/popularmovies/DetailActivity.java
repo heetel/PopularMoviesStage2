@@ -1,5 +1,6 @@
 package com.example.android.popularmovies;
 
+import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -16,6 +17,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
@@ -24,6 +26,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.example.android.popularmovies.data.MovieContract.MovieEntry;
@@ -34,7 +38,6 @@ import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
-import java.net.URL;
 
 /**
  * Created by Julian Heetel
@@ -53,6 +56,7 @@ public class DetailActivity extends AppCompatActivity
     //Keys for Intent
     public static final String INTENT_TABLE_KEY = "intent_table_key";
     public static final String INTENT_MOVIE_ID_KEY = "intent_movie_id_key";
+    public static final String INTENT_MOVIE_TITLE_KEY = "intent_movie_title_key";
 
     //for AsyncTaskLoader
     private final static int LOADER_ID = 420;
@@ -70,16 +74,53 @@ public class DetailActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         mDataBinding = DataBindingUtil.setContentView(this, R.layout.activity_detail);
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+//        setTranslucentStatusBar(getWindow());
+
+        //get Title from Intent
+        Intent startIntent = getIntent();
+        String title = "";
+//        if (startIntent.hasExtra(INTENT_MOVIE_TITLE_KEY))
+//            title = startIntent.getStringExtra(INTENT_MOVIE_TITLE_KEY);
+
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+                actionBar.setDisplayShowTitleEnabled(false);
+            actionBar.setTitle(title);
         }
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
             getWindow().setNavigationBarColor(getResourceColor(R.color.navigationBarColor));
 
         loadDataFromDB();
+    }
+
+    public static void setTranslucentStatusBar(Window window) {
+        if (window == null) return;
+        int sdkInt = Build.VERSION.SDK_INT;
+        if (sdkInt >= Build.VERSION_CODES.LOLLIPOP) {
+            setTranslucentStatusBarLollipop(window);
+        } else if (sdkInt >= Build.VERSION_CODES.KITKAT) {
+            setTranslucentStatusBarKiKat(window);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private static void setTranslucentStatusBarLollipop(Window window) {
+        window.setStatusBarColor(
+                window.getContext()
+                        .getResources()
+                        .getColor(R.color.transparent) /* add here your translucent color code */);
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    private static void setTranslucentStatusBarKiKat(Window window) {
+        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
     }
 
     /**
@@ -248,7 +289,14 @@ public class DetailActivity extends AppCompatActivity
             }
         }
 
-        mDataBinding.textViewTitle.setText(title);
+        Log.i(TAG, "setTitle: " + title);
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setTitle(title);
+        else {
+
+        }
+        if (mDataBinding.textViewTitle != null)
+            mDataBinding.textViewTitle.setText(title);
         mDataBinding.originalTitle.setText(originalTitle);
         mDataBinding.vote.setText(vote);
         mDataBinding.date.setText(releaseDate);
@@ -264,14 +312,16 @@ public class DetailActivity extends AppCompatActivity
                         posterPath)
                 .into(mDataBinding.imageViewPoster);
 
-        scaleBackdrop();
+//        scaleBackdrop();
 
         //Check if shown movie is a favourite and update the favourite ImageButton
         new CheckFavouritesTask().execute(mMovieId);
 
         //Apply custom font
-        Typeface font = Typeface.createFromAsset(getAssets(), "Ubuntu-L.ttf");
-        mDataBinding.textViewTitle.setTypeface(font);
+        if (mDataBinding.textViewTitle != null) {
+            Typeface font = Typeface.createFromAsset(getAssets(), "Ubuntu-L.ttf");
+            mDataBinding.textViewTitle.setTypeface(font);
+        }
 
         //put data into ContentValues
         mValues = new ContentValues();
@@ -288,29 +338,29 @@ public class DetailActivity extends AppCompatActivity
     /**
      * Adjust height of backdrop ImageView depending on screen width
      */
-    private void scaleBackdrop() {
-
-        ViewGroup.LayoutParams params = mDataBinding.frameLayoutBackdrop.getLayoutParams();
-
-        DisplayMetrics displaymetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
-        int orientation = getResources().getConfiguration().orientation;
-
-        Log.i(TAG, "Orientation: " + orientation);
-        int width;
-        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-            width = displaymetrics.widthPixels;
-        }
-        else {
-            width = mDataBinding.frameLayoutBackdrop.getMeasuredWidth();
-        }
-        Log.i(TAG, "width = " + width);
-        int height = ((int) (width * 0.562));
-        params.height = height;
-        Log.i(TAG, "height = " + height);
-
-        mDataBinding.frameLayoutBackdrop.setLayoutParams(params);
-    }
+//    private void scaleBackdrop() {
+//
+//        ViewGroup.LayoutParams params = mDataBinding.appBarLayout.getLayoutParams();
+//
+//        DisplayMetrics displaymetrics = new DisplayMetrics();
+//        getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+//        int orientation = getResources().getConfiguration().orientation;
+//
+//        Log.i(TAG, "Orientation: " + orientation);
+//        int width;
+//        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+//            width = displaymetrics.widthPixels;
+//        }
+//        else {
+//            width = mDataBinding.appBarLayout.getMeasuredWidth();
+//        }
+//        Log.i(TAG, "width = " + width);
+//        int height = ((int) (width * 0.562));
+//        params.height = height;
+//        Log.i(TAG, "height = " + height);
+//
+//        mDataBinding.appBarLayout.setLayoutParams(params);
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -323,7 +373,7 @@ public class DetailActivity extends AppCompatActivity
         switch (item.getItemId()) {
             case android.R.id.home:
                 // app icon in action bar clicked; goto parent activity.
-                this.finish();
+                super.onBackPressed();
                 return true;
             case R.id.action_open_in_web:
                 openInWeb();
@@ -375,6 +425,7 @@ public class DetailActivity extends AppCompatActivity
             Uri uri = getContentResolver().insert(MovieEntry.CONTENT_URI_FAVOURITES, mValues);
             Log.i(TAG, "Added to Favourites: " + uri);
         }
+
     }
 
 public Loader<ContentValues> onCreateLoader(int id, final Bundle args) {

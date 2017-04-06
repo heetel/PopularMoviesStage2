@@ -1,13 +1,38 @@
 <resources>
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:toolbarStyle">@style/Toolbar</item>
+        <item name="android:windowContentTransitions">true</item>
+    </style>
+
+    <style name="AppTheme.Detail" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:toolbarStyle">@style/Toolbar</item>
+        <item name="android:windowContentTransitions">true</item>
+        <item name="android:windowEnterTransition">@transition/detail_enter</item>
+        <item name="android:windowReturnTransition">@transition/detail_enter</item>
+        <item name="android:windowTranslucentStatus">true</item>
+    </style>
+    
+    <style name="Toolbar" parent="Widget.AppCompat.Toolbar">
+        <item name="android:background">@color/colorPrimary</item>
+        <item name="android:theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
+        <item name="android:popupTheme">@style/Theme.AppCompat.Light</item>
+        <item name="android:elevation">4dp</item>
+    </style>
+
+    <style name="ToolbarDetail" parent="Widget.AppCompat.Toolbar">
+        <item name="android:theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
+        <item name="android:popupTheme">@style/Theme.AppCompat.Light</item>
     </style>
 
     <style name="TvLabel">
-        <item name="android:textSize">16sp</item>
+        <item name="android:textSize">19sp</item>
         <item name="android:textColor">@color/mColorLabel</item>
         <item name="android:paddingLeft">16dp</item>
         <item name="android:paddingTop">12dp</item>
@@ -15,10 +40,10 @@
     </style>
 
     <style name="TvContent">
-        <item name="android:textSize">16sp</item>
+        <item name="android:textSize">19sp</item>
         <item name="android:textColor">@android:color/primary_text_dark</item>
-        <item name="android:paddingLeft">16dp</item>
-        <item name="android:paddingBottom">12dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
         <item name="android:textIsSelectable">true</item>
     </style>
 
@@ -34,9 +59,9 @@
     <style name="TvTitle">
         <item name="android:textSize">28sp</item>
         <item name="android:textColor">@android:color/primary_text_dark</item>
-        <item name="android:background">@color/colorTitleBackground</item>
+        <!--<item name="android:background">@color/colorTitleBackground</item>-->
         <item name="android:textIsSelectable">true</item>
-        <item name="android:fontFamily">sans-serif-light</item>
+        <!--<item name="android:fontFamily">sans-serif-condensed</item>-->
     </style>
 
     <style name="TvNotAvailable" parent="TvContent">
@@ -48,6 +73,20 @@
         <item name="android:textColor">@android:color/primary_text_dark</item>
         <item name="android:textAlignment">textStart</item>
         <item name="android:fontFamily">sans-serif-condensed</item>
+    </style>
+
+    <style name="GridLabel">
+        <item name="android:textSize">22sp</item>
+        <item name="android:textColor">#b0ffffff</item>
+        <item name="android:padding">24dp</item>
+        <item name="android:background">#2affffff</item>
+        <item name="android:layout_columnWeight">1</item>
+    </style>
+
+    <style name="GridContent" parent="GridLabel">
+        <item name="android:textSize">22sp</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:background">#41ffffff</item>
     </style>
 
 </resources>

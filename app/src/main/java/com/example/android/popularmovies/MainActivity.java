@@ -8,29 +8,27 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
+//import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -96,14 +94,19 @@ public class MainActivity extends AppCompatActivity
     private static int sCurrentScrollPosition = 0;
     private static int sRestoredScrollPosition = 0;
 
-    private String[] mPlanetTitles;
-    private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
+    private static GridLayoutManager mGridLayoutManager;
+
+//    private String[] mPlanetTitles;
+//    private DrawerLayout mDrawerLayout;
+//    private ListView mDrawerList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         //initialize RecyclerView and Adapter
         rvMovies = (RecyclerView) findViewById(R.id.rv_movies);
@@ -112,8 +115,8 @@ public class MainActivity extends AppCompatActivity
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
             sColumnCount = 3;
 
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, sColumnCount);
-        rvMovies.setLayoutManager(gridLayoutManager);
+        mGridLayoutManager = new GridLayoutManager(this, sColumnCount);
+        rvMovies.setLayoutManager(mGridLayoutManager);
 
         rvMovies.setHasFixedSize(true);
 
@@ -125,7 +128,7 @@ public class MainActivity extends AppCompatActivity
 
         pbLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 //        mPlanetTitles = getResources().getStringArray(R.array.planets_array);
-        mPlanetTitles = new String[]{"bla", "blub"};
+//        mPlanetTitles = new String[]{"bla", "blub"};
 //        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 //        mDrawerList = (ListView) findViewById(R.id.left_drawer);
 
@@ -172,11 +175,12 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-        if (!checkPlayServices()) {
+//        if (!checkPlayServices()) {
             // This is where we could either prompt a user that they should install
             // the latest version of Google Play Services, or add an error snackbar
             // that some features won't be available.
-        }
+//        }
+        checkPlayServices();
 
         //Query ContentProvider
         loadFromDB();
@@ -214,14 +218,21 @@ public class MainActivity extends AppCompatActivity
      * @param movieId movie_id for DetailActivity to query the right movie data
      */
     @Override
-    public void onListItemClick(String movieId) {
+    public void onListItemClick(String movieId, String title, int position) {
         Intent intent = new Intent(this, DetailActivity.class);
 
         intent.putExtra(DetailActivity.INTENT_MOVIE_ID_KEY, movieId);
 
         intent.putExtra(DetailActivity.INTENT_TABLE_KEY, sActiveTable);
 
-        startActivity(intent);
+        intent.putExtra(DetailActivity.INTENT_MOVIE_TITLE_KEY, title);
+
+        ActivityOptionsCompat activityOptionsCompat =
+                ActivityOptionsCompat.makeSceneTransitionAnimation(
+                        this, mGridLayoutManager.findViewByPosition(position), "poster");
+        ActivityCompat.startActivity(this, intent, activityOptionsCompat.toBundle());
+
+//        startActivity(intent);
     }
 
     /**

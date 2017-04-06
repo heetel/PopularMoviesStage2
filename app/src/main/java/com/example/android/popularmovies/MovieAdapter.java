@@ -3,6 +3,7 @@ package com.example.android.popularmovies;
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -35,7 +36,7 @@ class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
     final private ListItemCallbackListener mOnClickListener;
 
     interface ListItemCallbackListener {
-        void onListItemClick(String clickedItemIndex);
+        void onListItemClick(String movieId, String title, int position);
         void onLoadMore();
         void updatePosition(int position);
     }
@@ -133,8 +134,9 @@ class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
             int clickedPosition = getAdapterPosition();
             mCursor.moveToPosition(clickedPosition);
             String movieId = mCursor.getString(mCursor.getColumnIndex(MovieEntry.COLUMN_MOVIE_ID));
+            String title = mCursor.getString(mCursor.getColumnIndex(MovieEntry.COLUMN_TITLE));
             Log.i(TAG, "clicked movie id: " + movieId);
-            mOnClickListener.onListItemClick(movieId);
+            mOnClickListener.onListItemClick(movieId, title, clickedPosition);
         }
 
 
