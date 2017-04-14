@@ -24,7 +24,9 @@
     </fade>
     <!--<slide android:slideEdge="top">-->
         <!--<targets>-->
-            <!--<target android:targetId="@id/toolbar" />-->
+            <!--<target android:excludeId="@android:id/statusBarBackground"/>-->
+            <!--<target android:excludeId="@android:id/navigationBarBackground"/>-->
+            <!--<target android:targetId="@id/backdrop" />-->
         <!--</targets>-->
     <!--</slide>-->
     <!--<slide android:slideEdge="bottom">-->
