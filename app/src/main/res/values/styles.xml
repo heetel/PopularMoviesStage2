@@ -89,4 +89,14 @@
         <item name="android:background">#41ffffff</item>
     </style>
 
+    <style name="SearchResults" parent="Base.TextAppearance.AppCompat.SearchResult">
+        <!--<item name="android:background">@android:color/white</item>-->
+        <item name="android:padding">12dp</item>
+        <item name="android:paddingStart">24dp</item>
+    </style>
+
+    <style name="SearchItem" parent="Base.TextAppearance.AppCompat.SearchResult.Title">
+
+    </style>
+
 </resources>

@@ -1,4 +1,4 @@
-package com.example.android.popularmovies;
+package com.heetel.android.popularmovies;
 
 import android.app.AlertDialog;
 import android.app.SearchManager;
@@ -17,11 +17,13 @@ import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-//import android.support.v7.widget.SearchView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -29,14 +31,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.example.android.popularmovies.data.MovieContract;
-import com.example.android.popularmovies.utilities.ListUtil;
-import com.example.android.popularmovies.utilities.NetworkUtils;
+import com.heetel.android.popularmovies.data.Movie;
+import com.heetel.android.popularmovies.data.MovieContract;
+import com.heetel.android.popularmovies.utilities.ListUtil;
+import com.heetel.android.popularmovies.utilities.NetworkUtils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.heetel.android.popularmovies.utilities.SearchHelper;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -55,7 +60,10 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity
         implements MovieAdapter.ListItemCallbackListener,
         LoaderManager.LoaderCallbacks<ArrayList<ContentValues>>,
-        android.support.v7.widget.SearchView.OnQueryTextListener {
+        android.support.v7.widget.SearchView.OnQueryTextListener,
+        SearchHelper.SearchCallbacks,
+        SearchAdapter.ListItemCallbackListener
+{
 
     private final String TAG = MainActivity.class.getSimpleName();
 
@@ -63,10 +71,12 @@ public class MainActivity extends AppCompatActivity
     private static final String QUICKSTART_TOP_RATED = "com.example.android.popularmovies.QUICKSTART_TOP_RATED";
     private static final String QUICKSTART_FAVOURITES = "com.example.android.popularmovies.QUICKSTART_FAVOURITES";
 
-    private RecyclerView rvMovies;
+    private RecyclerView rvMovies, rvSearch;
     private ProgressBar pbLoadingIndicator;
+    private ImageView ivNoSearchResults;
     private Menu menu;
     MovieAdapter mAdapter;
+    SearchAdapter mSearchAdapter;
 
     private static int page = 1;
     private static final String PAGE_KEY = "page-key";
@@ -184,6 +194,18 @@ public class MainActivity extends AppCompatActivity
 
         //Query ContentProvider
         loadFromDB();
+
+        //init RecyclerView for Search results
+        rvSearch = (RecyclerView) findViewById(R.id.rv_search);
+        rvSearch.setVisibility(View.VISIBLE);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        rvSearch.setLayoutManager(layoutManager);
+        rvSearch.setHasFixedSize(true);
+        mSearchAdapter = new SearchAdapter(1, this, this);
+        rvSearch.setAdapter(mSearchAdapter);
+        rvSearch.setVisibility(View.GONE);
+
+        ivNoSearchResults = (ImageView) findViewById(R.id.noSearchResults);
     }
 
     @Override
@@ -320,12 +342,28 @@ public class MainActivity extends AppCompatActivity
         updateSelectorTitle();
 
         // Associate searchable configuration with the SearchView
-//        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-//        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
-//        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        final SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 //        searchView.setIconifiedByDefault(false);
-//        searchView.setOnQueryTextListener(this);
+        searchView.setOnQueryTextListener(this);
 //        searchView.setBackgroundColor(Color.WHITE);
+        MenuItem menuItem = menu.findItem(R.id.action_search);
+        MenuItemCompat.setOnActionExpandListener(menuItem, new MenuItemCompat.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                Log.i(TAG, "onMenuItemActionExpand");
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                Log.i(TAG, "onMenuItemActionCollapse");
+                rvSearch.setVisibility(View.GONE);
+                rvMovies.setVisibility(View.VISIBLE);
+                return true;
+            }
+        });
 
         return true;
     }
@@ -536,15 +574,11 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onQueryTextSubmit(String query) {
+        pbLoadingIndicator.setVisibility(View.VISIBLE);
+        rvMovies.setVisibility(View.GONE);
 
-        Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
-
-        // Check if no view has focus:
-        View view = this.getCurrentFocus();
-        if (view != null) {
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
+        SearchHelper searchHelper = new SearchHelper(this, query, this);
+        searchHelper.search();
 
         return true;
     }
@@ -553,6 +587,41 @@ public class MainActivity extends AppCompatActivity
     public boolean onQueryTextChange(String newText) {
         Log.i(TAG, "onQueryTextChange()" + newText);
         return false;
+    }
+
+    @Override
+    public void onSearch(ArrayList<ContentValues> results) {
+        Log.i(TAG, "onSearch");
+        pbLoadingIndicator.setVisibility(View.GONE);
+
+        if (results.size() <=0) {
+            ivNoSearchResults.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        rvSearch.setVisibility(View.VISIBLE);
+        mSearchAdapter.setData(results);
+        rvSearch.scrollToPosition(0);
+        // Check if no view has focus:
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
+
+    /**
+     * SeachItem click
+     * @param position clicked position
+     */
+    @Override
+    public void onListItemClick(int position) {
+        Log.i(TAG, "onListItemClick : " + position);
+        ArrayList<ContentValues> data = mSearchAdapter.getData();
+        Movie movie = new Movie(data.get(position));
+        Intent intent = new Intent(this, DetailActivity.class);
+        intent.putExtra(DetailActivity.INTENT_MOVIE_KEY, movie);
+        startActivity(intent);
     }
 
     private class MovieFromDBTask extends AsyncTask<Uri, Void, Cursor> {

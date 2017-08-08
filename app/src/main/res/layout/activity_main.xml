@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@android:color/black"
-    tools:context="com.example.android.popularmovies.MainActivity">
+    android:background="@android:color/white"
+    tools:context="com.heetel.android.popularmovies.MainActivity">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
@@ -23,7 +23,19 @@
             android:layout_height="match_parent"
             android:scrollbars="vertical" />
 
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_search"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"/>
 
+        <ImageView
+            android:id="@+id/noSearchResults"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/klappe"
+            android:visibility="gone"
+            android:scaleType="fitEnd"/>
 
         <ProgressBar
             android:id="@+id/pb_loading_indicator"

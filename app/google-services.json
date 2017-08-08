@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:763588605757:android:ff762dedbcced08d",
         "android_client_info": {
-          "package_name": "com.example.android.popularmovies"
+          "package_name": "com.heetel.android.popularmovies"
         }
       },
       "oauth_client": [
@@ -18,7 +18,7 @@
           "client_id": "763588605757-0gi6siklmioa9d1e92smc948qoompk48.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.android.popularmovies",
+            "package_name": "com.heetel.android.popularmovies",
             "certificate_hash": "507b7207fa458c51ca496d33637a0a7a86d74421"
           }
         },

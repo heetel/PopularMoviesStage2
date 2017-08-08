@@ -1,7 +1,6 @@
-package com.example.android.popularmovies.utilities;
+package com.heetel.android.popularmovies.utilities;
 
 import android.content.ContentValues;
-import android.util.Log;
 
 import java.util.ArrayList;
 

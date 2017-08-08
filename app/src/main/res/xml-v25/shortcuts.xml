@@ -8,9 +8,9 @@
         android:shortcutLongLabel="@string/popular"
         android:shortcutDisabledMessage="@string/popular">
         <intent
-            android:action="com.example.android.popularmovies.QUICKSTART_POPULAR"
-            android:targetPackage="com.example.android.popularmovies"
-            android:targetClass="com.example.android.popularmovies.MainActivity" />
+            android:action="com.heetel.android.popularmovies.QUICKSTART_POPULAR"
+            android:targetPackage="com.heetel.android.popularmovies"
+            android:targetClass="com.heetel.android.popularmovies.MainActivity" />
         <!-- If your shortcut is associated with multiple intents, include them
              here. The last intent in the list determines what the user sees when
              they launch this shortcut. -->
@@ -25,9 +25,9 @@
         android:shortcutLongLabel="@string/top_rated"
         android:shortcutDisabledMessage="@string/top_rated">
         <intent
-            android:action="com.example.android.popularmovies.QUICKSTART_TOP_RATED"
-            android:targetPackage="com.example.android.popularmovies"
-            android:targetClass="com.example.android.popularmovies.MainActivity" />
+            android:action="com.heetel.android.popularmovies.QUICKSTART_TOP_RATED"
+            android:targetPackage="com.heetel.android.popularmovies"
+            android:targetClass="com.heetel.android.popularmovies.MainActivity" />
         <!-- If your shortcut is associated with multiple intents, include them
              here. The last intent in the list determines what the user sees when
              they launch this shortcut. -->
@@ -42,9 +42,9 @@
         android:shortcutLongLabel="@string/favourites"
         android:shortcutDisabledMessage="@string/favourites">
         <intent
-            android:action="com.example.android.popularmovies.QUICKSTART_FAVOURITES"
-            android:targetPackage="com.example.android.popularmovies"
-            android:targetClass="com.example.android.popularmovies.MainActivity" />
+            android:action="com.heetel.android.popularmovies.QUICKSTART_FAVOURITES"
+            android:targetPackage="com.heetel.android.popularmovies"
+            android:targetClass="com.heetel.android.popularmovies.MainActivity" />
         <!-- If your shortcut is associated with multiple intents, include them
              here. The last intent in the list determines what the user sees when
              they launch this shortcut. -->

@@ -1,9 +1,8 @@
-package com.example.android.popularmovies;
+package com.heetel.android.popularmovies;
 
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -16,7 +15,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import com.example.android.popularmovies.data.MovieContract.MovieEntry;
+import com.heetel.android.popularmovies.data.MovieContract.MovieEntry;
 
 /**
  *
@@ -62,7 +61,7 @@ class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
 
     @Override
     public void onBindViewHolder(MovieViewHolder holder, int position) {
-        Log.d(TAG, "#" + position);
+//        Log.d(TAG, "#" + position);
         if(position == (mNumberItems - 5)) {
             Log.i(TAG, "the end is near");
             mOnClickListener.onLoadMore();

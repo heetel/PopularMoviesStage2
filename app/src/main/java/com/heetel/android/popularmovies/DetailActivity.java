@@ -1,4 +1,4 @@
-package com.example.android.popularmovies;
+package com.heetel.android.popularmovies;
 
 import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
@@ -20,21 +20,20 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import com.example.android.popularmovies.data.MovieContract.MovieEntry;
-import com.example.android.popularmovies.databinding.ActivityDetailBinding;
-import com.example.android.popularmovies.databinding.VideoItemBinding;
-import com.example.android.popularmovies.utilities.ListUtil;
-import com.example.android.popularmovies.utilities.NetworkUtils;
+import com.heetel.android.popularmovies.data.Movie;
+import com.heetel.android.popularmovies.data.MovieContract.MovieEntry;
+import com.heetel.android.popularmovies.databinding.ActivityDetailBinding;
+import com.heetel.android.popularmovies.databinding.VideoItemBinding;
+import com.heetel.android.popularmovies.utilities.ListUtil;
+import com.heetel.android.popularmovies.utilities.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -57,6 +56,7 @@ public class DetailActivity extends AppCompatActivity
     public static final String INTENT_TABLE_KEY = "intent_table_key";
     public static final String INTENT_MOVIE_ID_KEY = "intent_movie_id_key";
     public static final String INTENT_MOVIE_TITLE_KEY = "intent_movie_title_key";
+    public static final String INTENT_MOVIE_KEY = "intent_movie_key";
 
     //for AsyncTaskLoader
     private final static int LOADER_ID = 420;
@@ -67,6 +67,7 @@ public class DetailActivity extends AppCompatActivity
     private ContentValues mValues;
     private String mMovieId;
     private String[] mVideoKeys;
+    private Movie mMovie;
     ActivityDetailBinding mDataBinding;
 
     @Override
@@ -77,13 +78,24 @@ public class DetailActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+            getWindow().setNavigationBarColor(getResourceColor(R.color.navigationBarColor));
+
 //        setTranslucentStatusBar(getWindow());
 
         //get Title from Intent
         Intent startIntent = getIntent();
         String title = "";
-//        if (startIntent.hasExtra(INTENT_MOVIE_TITLE_KEY))
-//            title = startIntent.getStringExtra(INTENT_MOVIE_TITLE_KEY);
+        if (startIntent.hasExtra(INTENT_MOVIE_TITLE_KEY)) {
+            title = startIntent.getStringExtra(INTENT_MOVIE_TITLE_KEY);
+            loadDataFromDB();
+        } else if (startIntent.hasExtra(INTENT_MOVIE_KEY)) {
+            mMovie = startIntent.getParcelableExtra(INTENT_MOVIE_KEY);
+            title = mMovie.title;
+            mMovieId = mMovie.movieId;
+            updateUI(mMovie);
+            loadDetails();
+        }
 
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -94,10 +106,11 @@ public class DetailActivity extends AppCompatActivity
             actionBar.setTitle(title);
         }
 
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
-            getWindow().setNavigationBarColor(getResourceColor(R.color.navigationBarColor));
 
-        loadDataFromDB();
+
+
+
+
     }
 
     public static void setTranslucentStatusBar(Window window) {
@@ -205,6 +218,83 @@ public class DetailActivity extends AppCompatActivity
                 sIsFavourite = true;
                 mDataBinding.imageButtonFavourite.setImageResource(R.drawable.ic_star_blue);
             }
+        }
+    }
+
+    private void updateUI(Movie movie) {
+        Picasso.with(this).load(
+                "https://image.tmdb.org/t/p/w500" +
+                        movie.backdropPath)
+                .into(mDataBinding.imageViewBackdrop);
+
+        Picasso.with(this).load(
+                "https://image.tmdb.org/t/p/w500" +
+                        movie.posterPath)
+                .into(mDataBinding.imageViewPoster);
+
+        mDataBinding.originalTitle.setText(movie.originalTitle);
+        mDataBinding.vote.setText(movie.voteAverage);
+        mDataBinding.date.setText(movie.releaseDate);
+        mDataBinding.overview.setText(movie.overview);
+    }
+
+    private void updateDetails(ContentValues data) {
+
+        String videoNamesArray = data.getAsString(MovieEntry.COLUMN_VIDEOS_NAMES);
+        String[] mVideoNames = ListUtil.convertStringToArray(videoNamesArray, ",");
+        String videoKeysArray = data.getAsString(MovieEntry.COLUMN_VIDEOS_KEYS);
+        mVideoKeys = ListUtil.convertStringToArray(videoKeysArray, ",");
+
+        VideoItemBinding[] mVideoItems = new VideoItemBinding[]{
+                mDataBinding.videoItem1,
+                mDataBinding.videoItem2,
+                mDataBinding.videoItem3,
+                mDataBinding.videoItem4,
+                mDataBinding.videoItem5
+        };
+
+        mDataBinding.videosLabel.setVisibility(View.VISIBLE);
+
+        Log.i(TAG, "mVideoKeys length: " + mVideoKeys.length);
+        for (int i = 0; i < mVideoKeys.length && i < mVideoItems.length; i++) {
+            mVideoItems[i].videoItemFrameLayout.setVisibility(View.VISIBLE);
+            mVideoItems[i].textViewVideoName.setText("\t" + mVideoNames[i]);
+        }
+
+        if (TextUtils.isEmpty(mVideoKeys[0])) {
+            mVideoItems[0].videoItemFrameLayout.setVisibility(View.GONE);
+            mDataBinding.noVideos.setVisibility(View.VISIBLE);
+        }
+
+        String reviewAuthorsArray = data.getAsString(MovieEntry.COLUMN_REVIEWS_AUTHORS);
+        String[] reviewAuthors = ListUtil.convertStringToArray(reviewAuthorsArray, ListUtil.DELIMITER);
+        String reviewContensArray = data.getAsString(MovieEntry.COLUMN_REVIEWS_CONTENTS);
+        String[] reviewContents = ListUtil.convertStringToArray(reviewContensArray, ListUtil.DELIMITER);
+        Log.i(TAG, reviewAuthorsArray);
+
+        Log.i(TAG, "reviewAuthors length: " + reviewAuthors.length);
+        if (reviewAuthors.length > 0) {
+            mDataBinding.reviewsLabel.setVisibility(View.VISIBLE);
+            mDataBinding.reviews.setVisibility(View.VISIBLE);
+
+
+            String reviews = "";
+            for (int i = 0; i < reviewAuthors.length; i++) {
+                reviews += "<b>" + reviewAuthors[i] + ":  </b><br>" +
+                        reviewContents[i] + "<br><br>";
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                mDataBinding.reviews.setText(Html.fromHtml(reviews, Html.FROM_HTML_MODE_COMPACT));
+            } else {
+                //noinspection deprecation
+                mDataBinding.reviews.setText(Html.fromHtml(reviews));
+            }
+        }
+
+        if (TextUtils.isEmpty(reviewContents[0])) {
+            mDataBinding.reviews.setVisibility(View.GONE);
+            mDataBinding.noReviews.setVisibility(View.VISIBLE);
         }
     }
 
@@ -472,32 +562,36 @@ public Loader<ContentValues> onCreateLoader(int id, final Bundle args) {
         mDataBinding.pbDetailLoadingIndicator.setVisibility(View.INVISIBLE);
         if (data == null) return;
 
-        String where = "movie_id=?";
-        String[] selectionArgs = new String[]{mMovieId};
+        if (getIntent().hasExtra(INTENT_MOVIE_KEY)) {
+            updateDetails(data);
+        } else {
+            String where = "movie_id=?";
+            String[] selectionArgs = new String[]{mMovieId};
 
-        int rowsPopular = getContentResolver().update(
-                MovieEntry.CONTENT_URI,
-                data,
-                where,
-                selectionArgs
-        );
-        int rowsTopRated = getContentResolver().update(
-                MovieEntry.CONTENT_URI_TOP_RATED,
-                data,
-                where,
-                selectionArgs
-        );
-        int rowsFavourites = getContentResolver().update(
-                MovieEntry.CONTENT_URI_FAVOURITES,
-                data,
-                where,
-                selectionArgs
-        );
-        Log.i(TAG, "rows updated popular: " + rowsPopular);
-        Log.i(TAG, "rows updated top rated: " + rowsTopRated);
-        Log.i(TAG, "rows updated favourites: " + rowsFavourites);
+            int rowsPopular = getContentResolver().update(
+                    MovieEntry.CONTENT_URI,
+                    data,
+                    where,
+                    selectionArgs
+            );
+            int rowsTopRated = getContentResolver().update(
+                    MovieEntry.CONTENT_URI_TOP_RATED,
+                    data,
+                    where,
+                    selectionArgs
+            );
+            int rowsFavourites = getContentResolver().update(
+                    MovieEntry.CONTENT_URI_FAVOURITES,
+                    data,
+                    where,
+                    selectionArgs
+            );
+            Log.i(TAG, "rows updated popular: " + rowsPopular);
+            Log.i(TAG, "rows updated top rated: " + rowsTopRated);
+            Log.i(TAG, "rows updated favourites: " + rowsFavourites);
 
-        loadDataFromDB();
+            loadDataFromDB();
+        }
     }
 
     @Override

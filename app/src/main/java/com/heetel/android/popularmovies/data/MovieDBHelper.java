@@ -1,6 +1,6 @@
-package com.example.android.popularmovies.data;
+package com.heetel.android.popularmovies.data;
 
-import com.example.android.popularmovies.data.MovieContract.MovieEntry;
+import com.heetel.android.popularmovies.data.MovieContract.MovieEntry;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -31,9 +31,12 @@ public class MovieDBHelper extends SQLiteOpenHelper {
 
         final String CREATE_TABLE_FAVOURITES = getCreateString(MovieEntry.TABLE_NAME_FAVOURITES);
 
+//        final String CREATE_TABLE_SEARCH_RESULTS = getCreateString(MovieEntry.TABLE_NAME_SEARCH_RESULTS);
+
         db.execSQL(CREATE_TABLE);
         db.execSQL(CREATE_TABLE_TOP_RATED);
         db.execSQL(CREATE_TABLE_FAVOURITES);
+//        db.execSQL(CREATE_TABLE_SEARCH_RESULTS);
     }
 
     @Override
@@ -41,6 +44,7 @@ public class MovieDBHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + MovieEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + MovieEntry.TABLE_NAME_TOP_RATED);
         db.execSQL("DROP TABLE IF EXISTS " + MovieEntry.TABLE_NAME_FAVOURITES);
+//        db.execSQL("DROP TABLE IF EXISTS " + MovieEntry.TABLE_NAME_SEARCH_RESULTS);
         onCreate(db);
         Log.i("Database", "upgrade");
     }

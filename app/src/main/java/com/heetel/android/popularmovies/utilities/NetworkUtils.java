@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.android.popularmovies.utilities;
+package com.heetel.android.popularmovies.utilities;
 
 import android.content.ContentValues;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.example.android.popularmovies.data.MovieContract.MovieEntry;
+import com.heetel.android.popularmovies.data.MovieContract.MovieEntry;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -53,6 +53,8 @@ public class NetworkUtils {
             "https://api.themoviedb.org/3/movie/top_rated";
     private final static String THEMOVIEDB_BASE_URL_MOVIE =
             "https://api.themoviedb.org/3/movie/";
+    private final static String THEMOVIEDB_BASE_URL_SEARCH_MOVIE =
+            "https://api.themoviedb.org/3/search/movie";
 
     private final static String THEMOVIEDB_PATH_VIDEOS = "videos";
     private final static String THEMOVIEDB_PATH_REVIEWS = "reviews";
@@ -61,9 +63,10 @@ public class NetworkUtils {
     private static String active_url = THEMOVIEDB_BASE_URL_POPULAR;
 
     private final static String PARAM_API = "api_key";
-    private final static String API = "";//insert your API Key here.
+    private final static String API = "1de56c3d596be90580d20262de5d3bdd";//insert your API Key here.
     private final static String LANGUAGE_KEY = "language";
     private final static String PAGE_KEY = "page";
+    private final static String PARAM_QUERY = "query";
 
     public static void setPopular() {
         active_url = THEMOVIEDB_BASE_URL_POPULAR;
@@ -119,6 +122,22 @@ public class NetworkUtils {
                 .appendPath(THEMOVIEDB_PATH_REVIEWS)
                 .appendQueryParameter(PARAM_API, API)
                 .appendQueryParameter(LANGUAGE_KEY, getLanguage()).build();
+
+        try {
+            return new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static URL buildSearchUrl(String query) {
+        if (TextUtils.isEmpty(API)) return null;
+
+        Uri builtUri = Uri.parse(THEMOVIEDB_BASE_URL_SEARCH_MOVIE).buildUpon()
+                .appendQueryParameter(PARAM_API, API)
+                .appendQueryParameter(LANGUAGE_KEY, getLanguage())
+                .appendQueryParameter(PARAM_QUERY, query).build();
 
         try {
             return new URL(builtUri.toString());

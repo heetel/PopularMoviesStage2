@@ -1,4 +1,4 @@
-package com.example.android.popularmovies.data;
+package com.heetel.android.popularmovies.data;
 
 import android.net.Uri;
 import android.provider.BaseColumns;
@@ -10,15 +10,17 @@ import android.provider.BaseColumns;
 
 public class MovieContract {
 
-    public static final String AUTHORITY = "com.example.android.popularmovies";
+    static final String AUTHORITY = "com.heetel.android.popularmovies";
 
-    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + AUTHORITY);
+    private static final Uri BASE_CONTENT_URI = Uri.parse("content://" + AUTHORITY);
 
-    public static final String PATH_MOVIES = "movies";
+    static final String PATH_MOVIES = "movies";
 
-    public static final String PATH_TOP_RATED = "top-rated";
+    static final String PATH_TOP_RATED = "top-rated";
 
-    public static final String PATH_FAVOURITES = "favourites";
+    static final String PATH_FAVOURITES = "favourites";
+
+    static final String PATH_SEARCH_RESULTS = "search-results";
 
     public static final class MovieEntry implements BaseColumns {
 
@@ -28,14 +30,18 @@ public class MovieContract {
         public static final Uri CONTENT_URI_TOP_RATED =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_TOP_RATED).build();
 
-        public static final Uri CONTENT_URI_FAVOURITES =
+        public static final Uri CONTENT_URI_SEARCH_RESULTS =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_FAVOURITES).build();
 
-        public static final String TABLE_NAME = "movies";
-        public static final String TABLE_NAME_TOP_RATED = "movies_top_rated";
-        public static final String TABLE_NAME_FAVOURITES = "movies_favourites";
+        public static final Uri CONTENT_URI_FAVOURITES =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_SEARCH_RESULTS).build();
 
-        public static final String COLUMN_CREATE_DATE = "create_date";
+        static final String TABLE_NAME = "movies";
+        static final String TABLE_NAME_TOP_RATED = "movies_top_rated";
+        static final String TABLE_NAME_FAVOURITES = "movies_favourites";
+        static final String TABLE_NAME_SEARCH_RESULTS = "movies_search_results";
+
+        static final String COLUMN_CREATE_DATE = "create_date";
         public static final String COLUMN_MOVIE_ID = "movie_id";
         public static final String COLUMN_TITLE = "title";
         public static final String COLUMN_ORIGINAL_TITLE = "original_title";

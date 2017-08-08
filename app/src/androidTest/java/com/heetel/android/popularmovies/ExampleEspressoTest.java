@@ -1,4 +1,4 @@
-package com.example.android.popularmovies;
+package com.heetel.android.popularmovies;
 
 
 import android.support.test.espresso.ViewInteraction;
