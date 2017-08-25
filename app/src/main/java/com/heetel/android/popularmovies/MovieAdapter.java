@@ -40,10 +40,10 @@ class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
         void updatePosition(int position);
     }
 
-    MovieAdapter(int numberItems, ListItemCallbackListener listener, Context context) {
+    MovieAdapter(ListItemCallbackListener listener, Context context) {
         super();
-        this.mNumberItems = numberItems;
         this.mOnClickListener = listener;
+        mNumberItems = 0;
         this.context = context;
     }
 

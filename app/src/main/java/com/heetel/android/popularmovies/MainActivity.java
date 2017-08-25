@@ -2,12 +2,12 @@ package com.heetel.android.popularmovies;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.FragmentTransaction;
 import android.app.SearchManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
@@ -15,9 +15,9 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -31,16 +31,17 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigation;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigationItem;
+import com.aurelhubert.ahbottomnavigation.notification.AHNotification;
 import com.heetel.android.popularmovies.data.Movie;
 import com.heetel.android.popularmovies.data.MovieContract;
 import com.heetel.android.popularmovies.utilities.ListUtil;
@@ -51,6 +52,9 @@ import com.heetel.android.popularmovies.utilities.SearchHelper;
 
 import java.net.URL;
 import java.util.ArrayList;
+
+// TODO: Aufräumen: BackgroundTasks jetzt in Fragment
+// TODO: Crash bei Rotation
 
 /**
  * Created by Julian Heetel
@@ -64,7 +68,7 @@ import java.util.ArrayList;
  * When this app starts,
  */
 public class MainActivity extends AppCompatActivity
-        implements MovieAdapter.ListItemCallbackListener,
+        implements
         LoaderManager.LoaderCallbacks<ArrayList<ContentValues>>,
         android.support.v7.widget.SearchView.OnQueryTextListener,
         SearchHelper.SearchCallbacks,
@@ -81,7 +85,6 @@ public class MainActivity extends AppCompatActivity
     private ProgressBar pbLoadingIndicator;
     private ImageView ivNoSearchResults;
     private Menu menu;
-    private AHBottomNavigation bottomNavigation;
     MovieAdapter mAdapter;
     SearchAdapter mSearchAdapter;
 
@@ -113,9 +116,12 @@ public class MainActivity extends AppCompatActivity
 
     private static GridLayoutManager mGridLayoutManager;
 
-//    private String[] mPlanetTitles;
-//    private DrawerLayout mDrawerLayout;
-//    private ListView mDrawerList;
+    private int currentIndex;
+    private MovieListFragment movieFragments[] = new MovieListFragment[3];
+    private FragmentManager fragmentManager;
+    private FragmentTransaction fragmentTransaction;
+    private AHBottomNavigation bottomNavigation;
+    private FrameLayout fragmentContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,7 +131,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        //initialize RecyclerView and Adapter
+        /*//initialize RecyclerView and Adapter
         rvMovies = (RecyclerView) findViewById(R.id.rv_movies);
         //RecyclerView displays 2 or 3 Columns depending on devices orientation
         sColumnCount = 2;
@@ -140,9 +146,10 @@ public class MainActivity extends AppCompatActivity
         mAdapter = new MovieAdapter(NUM_LIST_ITEMS, this, MainActivity.this);
         rvMovies.setAdapter(mAdapter);
 
-        pbLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
+        pbLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);*/
 
-        handleIntent(getIntent());
+
+
 
         //In case the App started from Nougat launcher shortcut, apply table name to query
         String action = getIntent().getAction();
@@ -150,6 +157,7 @@ public class MainActivity extends AppCompatActivity
         switch (getIntent().getAction()) {
             case QUICKSTART_POPULAR:
                 setPopular();
+                switchCurrentTab(0);
                 break;
             case QUICKSTART_TOP_RATED:
                 setTopRated();
@@ -176,7 +184,7 @@ public class MainActivity extends AppCompatActivity
         checkPlayServices();
 
         //Query ContentProvider
-        loadFromDB();
+//        loadFromDB();
 
         //init RecyclerView for Search results
         rvSearch = (RecyclerView) findViewById(R.id.rv_search);
@@ -196,6 +204,7 @@ public class MainActivity extends AppCompatActivity
     @SuppressLint({"NewApi", "LocalSuppress"})
     private void initBottomNavigation() {
         bottomNavigation = (AHBottomNavigation) findViewById(R.id.bottom_navigation);
+//        viewPager = (AHBottomNavigationViewPager) findViewById(R.id.view_pager);
 
         //Create Items
         AHBottomNavigationItem item1 = new AHBottomNavigationItem(getString(R.string.popular), getDrawable(R.drawable.ic_popular), getColor(R.color.color_tab_1));
@@ -244,17 +253,41 @@ public class MainActivity extends AppCompatActivity
                         setFavourites();
                         break;
                 }
-                loadFromDB();
-                updateSelectorTitle();
+                switchCurrentTab(position);
+//                loadFromDB();
+//                updateSelectorTitle();
                 return true;
             }
         });
-        bottomNavigation.setOnNavigationPositionListener(new AHBottomNavigation.OnNavigationPositionListener() {
-            @Override
-            public void onPositionChange(int y) {
-                Log.i(TAG, "onPositionChange()");
-            }
-        });
+
+        bottomNavigation.setNotificationBackgroundColor(getColor(R.color.mColorLabel));
+
+        AHNotification notification = new AHNotification.Builder()
+                .setText("1")
+                .build();
+
+        bottomNavigation.setNotification(notification, 2);
+
+        fragmentManager = getFragmentManager();
+        fragmentTransaction = fragmentManager.beginTransaction();
+
+        movieFragments[0] = MovieListFragment.newInstance(0);
+        movieFragments[1] = MovieListFragment.newInstance(1);
+        movieFragments[2] = MovieListFragment.newInstance(2);
+        fragmentTransaction.replace(R.id.fragment_container, movieFragments[0]);
+
+        fragmentTransaction.commit();
+    }
+
+    private void switchCurrentTab(int index) {
+        currentIndex = index;
+
+        fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.setCustomAnimations(R.animator.fade_in, R.animator.fade_out);
+        fragmentTransaction.replace(R.id.fragment_container, movieFragments[index]);
+        fragmentTransaction.commit();
+
+
     }
 
     private void switchBottomNavigationColored(){
@@ -266,7 +299,7 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         if (sActiveTable == CODE_FAVOURITES) {
             Log.i(TAG, "onResume: refresh favourites");
-            loadFromDB();
+//            loadFromDB();
         }
         super.onResume();
     }
@@ -285,7 +318,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        handleIntent(intent);
     }
 
     /**
@@ -293,7 +325,6 @@ public class MainActivity extends AppCompatActivity
      *
      * @param movieId movie_id for DetailActivity to query the right movie data
      */
-    @Override
     public void onListItemClick(String movieId, String title, int position) {
         Intent intent = new Intent(this, DetailActivity.class);
 
@@ -314,7 +345,6 @@ public class MainActivity extends AppCompatActivity
     /**
      * This method gets called when the User scrolls down to the end of RecyclerView
      */
-    @Override
     public void onLoadMore() {
         if (sActiveTable == CODE_FAVOURITES) return;
         loadFromNetwork();
@@ -326,7 +356,6 @@ public class MainActivity extends AppCompatActivity
      *
      * @param position current position of RecyclerView
      */
-    @Override
     public void updatePosition(int position) {
         sCurrentScrollPosition = position;
     }
@@ -426,7 +455,6 @@ public class MainActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_refresh) {
             clearDB();
-            loadFromDB();
             return true;
         /*} else if (item.getItemId() == R.id.action_filter) {
             showPopup();*/
@@ -445,8 +473,8 @@ public class MainActivity extends AppCompatActivity
     private void clearDB() {
         //don't delete favourites
         if (sActiveTable == CODE_FAVOURITES) return;
-        int rows = getContentResolver().delete(getActiveTableUri(sActiveTable), null, null);
-        mAdapter.setMovies(null);
+        int rows = getContentResolver().delete(getActiveTableUri(currentIndex), null, null);
+        movieFragments[currentIndex].refresh();
         page = 1;
         Log.i(TAG, rows + " rows deleted");
     }
@@ -460,11 +488,11 @@ public class MainActivity extends AppCompatActivity
      */
     public static Uri getActiveTableUri(int key) {
         switch (key) {
-            case CODE_POPULAR:
+            case 0:
                 return MovieContract.MovieEntry.CONTENT_URI;
-            case MainActivity.CODE_TOP_RATED:
+            case 1:
                 return MovieContract.MovieEntry.CONTENT_URI_TOP_RATED;
-            case MainActivity.CODE_FAVOURITES:
+            case 2:
                 return MovieContract.MovieEntry.CONTENT_URI_FAVOURITES;
             default:
                 return MovieContract.MovieEntry.CONTENT_URI;
@@ -514,6 +542,8 @@ public class MainActivity extends AppCompatActivity
     private void setTopRated() {
         NetworkUtils.setTopRated();
         sActiveTable = CODE_TOP_RATED;
+
+
     }
 
     /**
@@ -791,14 +821,5 @@ public class MainActivity extends AppCompatActivity
         mAdapter.setMovies(null);
         Toast.makeText(this, getString(R.string.favourites_removed), Toast.LENGTH_SHORT).show();
         // make Snackbar instead of Toast
-    }
-
-    private void handleIntent(Intent intent) {
-
-        if (intent.getAction().equals(Intent.ACTION_SEARCH)) {
-            String query = intent.getStringExtra(SearchManager.QUERY);
-            Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
-        }
-
     }
 }
