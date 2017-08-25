@@ -6,6 +6,9 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:toolbarStyle">@style/Toolbar</item>
         <item name="android:windowContentTransitions">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+        <!--<item name="android:fitsSystemWindows">true</item>-->
+        <!--<item name="android:navigationBarColor">@android:color/transparent</item>-->
     </style>
 
     <style name="AppTheme.Detail" parent="Theme.AppCompat.Light.NoActionBar">

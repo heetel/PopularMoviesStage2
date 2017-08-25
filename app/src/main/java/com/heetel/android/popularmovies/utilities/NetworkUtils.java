@@ -367,6 +367,8 @@ public class NetworkUtils {
                 contentValues.put(MovieEntry.COLUMN_POSTER_PATH, posterPath);
                 contentValues.put(MovieEntry.COLUMN_BACKDROP_PATH, backdropPath);
 
+//                getDetailsFromMovieId(String.valueOf(movieID));
+
                 movies.add(contentValues);
             }
 
@@ -375,6 +377,9 @@ public class NetworkUtils {
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            return null;
         }
     }
 

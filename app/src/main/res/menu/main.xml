@@ -10,11 +10,11 @@
         app:showAsAction="collapseActionView|ifRoom"
         app:actionViewClass="android.support.v7.widget.SearchView" />
 
-    <item
+    <!--<item
         android:id="@+id/action_filter"
         android:title="@string/popular"
         android:orderInCategory="1"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="ifRoom"/>-->
 
     <item
         android:id="@+id/action_refresh"
@@ -26,6 +26,12 @@
         android:id="@+id/action_remove_all_favourites"
         android:title="@string/remove_all_favourites"
         android:orderInCategory="3"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_switch_colored"
+        android:title="switch colored"
+        android:orderInCategory="4"
         app:showAsAction="never"/>
 
 </menu>

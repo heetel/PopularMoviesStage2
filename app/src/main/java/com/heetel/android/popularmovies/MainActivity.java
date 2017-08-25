@@ -1,5 +1,6 @@
 package com.heetel.android.popularmovies;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.content.ContentValues;
@@ -8,10 +9,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.LoaderManager;
@@ -35,6 +39,8 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.aurelhubert.ahbottomnavigation.AHBottomNavigation;
+import com.aurelhubert.ahbottomnavigation.AHBottomNavigationItem;
 import com.heetel.android.popularmovies.data.Movie;
 import com.heetel.android.popularmovies.data.MovieContract;
 import com.heetel.android.popularmovies.utilities.ListUtil;
@@ -75,6 +81,7 @@ public class MainActivity extends AppCompatActivity
     private ProgressBar pbLoadingIndicator;
     private ImageView ivNoSearchResults;
     private Menu menu;
+    private AHBottomNavigation bottomNavigation;
     MovieAdapter mAdapter;
     SearchAdapter mSearchAdapter;
 
@@ -133,25 +140,7 @@ public class MainActivity extends AppCompatActivity
         mAdapter = new MovieAdapter(NUM_LIST_ITEMS, this, MainActivity.this);
         rvMovies.setAdapter(mAdapter);
 
-        //start at beginning
-//        page = 1;
-
         pbLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
-//        mPlanetTitles = getResources().getStringArray(R.array.planets_array);
-//        mPlanetTitles = new String[]{"bla", "blub"};
-//        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-//        mDrawerList = (ListView) findViewById(R.id.left_drawer);
-
-//        // Set the adapter for the list view
-//        mDrawerList.setAdapter(new ArrayAdapter<String>(this,
-//                R.layout.video_item, mPlanetTitles));
-//        // Set the list's click listener
-//        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                Log.i(TAG, "onItemClick()");
-//            }
-//        });
 
         handleIntent(getIntent());
 
@@ -184,12 +173,6 @@ public class MainActivity extends AppCompatActivity
                 Log.i(TAG, "savedInstanceState restored scrollposition: " + scrollPosition);
             }
         }
-
-//        if (!checkPlayServices()) {
-            // This is where we could either prompt a user that they should install
-            // the latest version of Google Play Services, or add an error snackbar
-            // that some features won't be available.
-//        }
         checkPlayServices();
 
         //Query ContentProvider
@@ -206,6 +189,77 @@ public class MainActivity extends AppCompatActivity
         rvSearch.setVisibility(View.GONE);
 
         ivNoSearchResults = (ImageView) findViewById(R.id.noSearchResults);
+
+        initBottomNavigation();
+    }
+
+    @SuppressLint({"NewApi", "LocalSuppress"})
+    private void initBottomNavigation() {
+        bottomNavigation = (AHBottomNavigation) findViewById(R.id.bottom_navigation);
+
+        //Create Items
+        AHBottomNavigationItem item1 = new AHBottomNavigationItem(getString(R.string.popular), getDrawable(R.drawable.ic_popular), getColor(R.color.color_tab_1));
+        AHBottomNavigationItem item2 = new AHBottomNavigationItem(getString(R.string.top_rated), getDrawable(R.drawable.ic_top_rated), getColor(R.color.color_tab_2));
+        AHBottomNavigationItem item3 = new AHBottomNavigationItem(getString(R.string.favourites), getDrawable(R.drawable.ic_shortcut_favourite), getColor(R.color.color_tab_3));
+
+        //Add Items
+        bottomNavigation.addItem(item1);
+        bottomNavigation.addItem(item2);
+        bottomNavigation.addItem(item3);
+
+        //Set Colors
+        bottomNavigation.setBackgroundColor(Color.WHITE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            bottomNavigation.setAccentColor(getColor(R.color.colorAccent));
+        }
+        bottomNavigation.setInactiveColor(Color.parseColor("#747474"));
+
+        // Force to tint the drawable (useful for font with icon for example)
+//        bottomNavigation.setForceTint(true);
+        // Display color under navigation bar (API 21+)
+        bottomNavigation.setTranslucentNavigationEnabled(true);
+
+        // Manage titles
+        bottomNavigation.setTitleState(AHBottomNavigation.TitleState.SHOW_WHEN_ACTIVE);
+//        bottomNavigation.setTitleState(AHBottomNavigation.TitleState.ALWAYS_SHOW);
+//        bottomNavigation.setTitleState(AHBottomNavigation.TitleState.ALWAYS_HIDE);
+
+        // Use colored navigation with circle reveal effect
+//        bottomNavigation.setColored(true);
+
+//        bottomNavigation.disableItemAtPosition(2);
+
+        bottomNavigation.setOnTabSelectedListener(new AHBottomNavigation.OnTabSelectedListener() {
+            @Override
+            public boolean onTabSelected(int position, boolean wasSelected) {
+                Log.i(TAG, "onPositionChange() " + position + wasSelected);
+                switch (position) {
+                    case 0:
+                        setPopular();
+                        break;
+                    case 1:
+                        setTopRated();
+                        break;
+                    case 2:
+                        setFavourites();
+                        break;
+                }
+                loadFromDB();
+                updateSelectorTitle();
+                return true;
+            }
+        });
+        bottomNavigation.setOnNavigationPositionListener(new AHBottomNavigation.OnNavigationPositionListener() {
+            @Override
+            public void onPositionChange(int y) {
+                Log.i(TAG, "onPositionChange()");
+            }
+        });
+    }
+
+    private void switchBottomNavigationColored(){
+        if (bottomNavigation.isColored()) bottomNavigation.setColored(false);
+        else bottomNavigation.setColored(true);
     }
 
     @Override
@@ -374,10 +428,12 @@ public class MainActivity extends AppCompatActivity
             clearDB();
             loadFromDB();
             return true;
-        } else if (item.getItemId() == R.id.action_filter) {
-            showPopup();
+        /*} else if (item.getItemId() == R.id.action_filter) {
+            showPopup();*/
         } else if (item.getItemId() == R.id.action_remove_all_favourites) {
             showRemoveFavouritesDialog();
+        } else if (item.getItemId() == R.id.action_switch_colored) {
+            switchBottomNavigationColored();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -419,7 +475,7 @@ public class MainActivity extends AppCompatActivity
      * Show options menu to select table to be displayed.
      */
     public void showPopup() {
-        final View menuItemView = findViewById(R.id.action_filter);
+        /*final View menuItemView = findViewById(R.id.action_filter);
         android.widget.PopupMenu popupMenu = new android.widget.PopupMenu(MainActivity.this, menuItemView);
         MenuInflater inflater = popupMenu.getMenuInflater();
         inflater.inflate(R.menu.filter_actions, popupMenu.getMenu());
@@ -441,7 +497,7 @@ public class MainActivity extends AppCompatActivity
                 return false;
             }
         });
-        popupMenu.show();
+        popupMenu.show();*/
     }
 
     /**
@@ -691,7 +747,7 @@ public class MainActivity extends AppCompatActivity
      * Update the options items title depending on current table
      */
     private void updateSelectorTitle() {
-        MenuItem miFilter = menu.findItem(R.id.action_filter);
+        /*MenuItem miFilter = menu.findItem(R.id.action_filter);
         switch (sActiveTable) {
             case CODE_POPULAR:
                 miFilter.setTitle(R.string.popular);
@@ -704,7 +760,7 @@ public class MainActivity extends AppCompatActivity
                 break;
             default:
                 miFilter.setTitle(R.string.popular);
-        }
+        }*/
     }
 
     /**

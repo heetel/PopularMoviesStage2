@@ -7,10 +7,11 @@
     android:background="?android:attr/selectableItemBackground">
 
     <LinearLayout
-        style="@style/SearchResults"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:paddingStart="24dp">
 
         <TextView
             android:id="@+id/si_title"
@@ -27,6 +28,14 @@
             android:textColor="#999"/>
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/si_originaltitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/SearchItem"
+        android:textColor="#999"
+        android:visibility="gone"/>
 
     <View
         android:layout_width="match_parent"

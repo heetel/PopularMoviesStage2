@@ -30,11 +30,8 @@ public class MovieContract {
         public static final Uri CONTENT_URI_TOP_RATED =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_TOP_RATED).build();
 
-        public static final Uri CONTENT_URI_SEARCH_RESULTS =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_FAVOURITES).build();
-
         public static final Uri CONTENT_URI_FAVOURITES =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_SEARCH_RESULTS).build();
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_FAVOURITES).build();
 
         static final String TABLE_NAME = "movies";
         static final String TABLE_NAME_TOP_RATED = "movies_top_rated";

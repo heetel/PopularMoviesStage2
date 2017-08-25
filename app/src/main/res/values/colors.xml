@@ -10,4 +10,8 @@
     <color name="navigationBarColor">@color/colorBackground</color>
     <color name="transparent">#15000000</color>
     <color name="button">#252525</color>
+
+    <color name="color_tab_1">#455C65</color>
+    <color name="color_tab_2">#591d1d</color>
+    <color name="color_tab_3">#333f74</color>
 </resources>

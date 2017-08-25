@@ -63,13 +63,14 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
 
     class SearchViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
-        TextView tvTitle, tvYear;
+        TextView tvTitle, tvYear, tvOriginalTitle;
 
         SearchViewHolder(View itemView) {
             super(itemView);
 
             tvTitle = (TextView) itemView.findViewById(R.id.si_title);
             tvYear = (TextView) itemView.findViewById(R.id.si_year);
+            tvOriginalTitle = (TextView) itemView.findViewById(R.id.si_originaltitle);
 
             itemView.setOnClickListener(this);
         }
@@ -82,6 +83,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
             if (year.length() > 4) year = year.substring(0, 4);
             tvYear.setText(" · " + year);
             tvTitle.setText(title);
+
+            String originalTitle = mData.get(index).getAsString(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE);
+//            tvOriginalTitle.setText(originalTitle);
         }
 
         @Override

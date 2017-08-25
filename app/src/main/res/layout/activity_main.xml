@@ -1,51 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@android:color/white"
-    tools:context="com.heetel.android.popularmovies.MainActivity">
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        style="@style/Toolbar"/>
+        android:layout_height="match_parent"
+        android:layout_marginTop="24dp"
+        android:background="@android:color/black">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        <android.support.design.widget.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/rv_movies"
+                <android.support.v7.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    style="@style/Toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    app:layout_scrollFlags="snap"/><!--scroll|enterAlways-->
+
+        </android.support.design.widget.AppBarLayout>
+
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scrollbars="vertical" />
+            android:layout_marginTop="?attr/actionBarSize">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/rv_search"
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv_movies"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="vertical" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv_search"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/noSearchResults"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/klappe"
+                android:scaleType="fitEnd"
+                android:visibility="gone" />
+
+            <ProgressBar
+                android:id="@+id/pb_loading_indicator"
+
+                android:layout_width="@dimen/progressbar_size"
+                android:layout_height="@dimen/progressbar_size"
+                android:layout_gravity="center"
+                android:indeterminateTint="@android:color/white"
+                android:visibility="invisible" />
+
+        </FrameLayout>
+
+        <com.aurelhubert.ahbottomnavigation.AHBottomNavigation
+            android:id="@+id/bottom_navigation"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone"/>
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom" />
 
-        <ImageView
-            android:id="@+id/noSearchResults"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/klappe"
-            android:visibility="gone"
-            android:scaleType="fitEnd"/>
+    </android.support.design.widget.CoordinatorLayout>
 
-        <ProgressBar
-            android:id="@+id/pb_loading_indicator"
-
-            android:layout_width="@dimen/progressbar_size"
-            android:layout_height="@dimen/progressbar_size"
-            android:layout_gravity="center"
-            android:indeterminateTint="@android:color/white"
-            android:visibility="invisible" />
-
-    </FrameLayout>
-
-</LinearLayout>
+</layout>
