@@ -55,16 +55,18 @@ import java.util.ArrayList;
 
 // TODO: Aufräumen: BackgroundTasks jetzt in Fragment
 // TODO: Crash bei Rotation
+// TODO: Rotation: Fragment und Scrollposition wiederherstellen
+// TODO: Bug: Doppelte Fragment Instanzen
 
 /**
  * Created by Julian Heetel
- * <p>
+ *
  * This app doesn't need internet connection every time the user wants to see popular movies.
  * On initial launch, there will be 20 items (popular / top rated) loaded from API and saved into
  * ContentProvider. When the user scrolls down close to the end of the list, there will be 20 more
  * items loaded and so on. That data will persist until the user clicks "Refresh" in the options
  * menu or reset the apps storage.
- * <p>
+ *
  * When this app starts,
  */
 public class MainActivity extends AppCompatActivity
@@ -151,36 +153,7 @@ public class MainActivity extends AppCompatActivity
 
 
 
-        //In case the App started from Nougat launcher shortcut, apply table name to query
-        String action = getIntent().getAction();
-        Log.i(TAG, "intent action: " + action);
-        switch (getIntent().getAction()) {
-            case QUICKSTART_POPULAR:
-                setPopular();
-                switchCurrentTab(0);
-                break;
-            case QUICKSTART_TOP_RATED:
-                setTopRated();
-                break;
-            case QUICKSTART_FAVOURITES:
-                setFavourites();
-                break;
-            default:
-                setPopular();
-        }
 
-        //restore lastly shown table and scroll position in RecyclerView
-        if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey(KEY_ACTIVE_TABLE)) {
-                sActiveTable = savedInstanceState.getInt(KEY_ACTIVE_TABLE);
-                Log.i(TAG, "savedInstanceState restored");
-            }
-            if (savedInstanceState.containsKey(KEY_CURRENT_SCROLLPOSITION)) {
-                int scrollPosition = savedInstanceState.getInt(KEY_CURRENT_SCROLLPOSITION);
-                sRestoredScrollPosition = scrollPosition;
-                Log.i(TAG, "savedInstanceState restored scrollposition: " + scrollPosition);
-            }
-        }
         checkPlayServices();
 
         //Query ContentProvider
@@ -199,6 +172,40 @@ public class MainActivity extends AppCompatActivity
         ivNoSearchResults = (ImageView) findViewById(R.id.noSearchResults);
 
         initBottomNavigation();
+
+        //In case the App started from Nougat launcher shortcut, apply table name to query
+        String action = getIntent().getAction();
+        Log.i(TAG, "intent action: " + action);
+        switch (getIntent().getAction()) {
+            case QUICKSTART_POPULAR:
+                setPopular();
+                switchCurrentTab(0);
+                break;
+            case QUICKSTART_TOP_RATED:
+                setTopRated();
+                switchCurrentTab(1);
+                break;
+            case QUICKSTART_FAVOURITES:
+                setFavourites();
+                switchCurrentTab(2);
+                break;
+            default:
+                setPopular();
+        }
+
+        //restore lastly shown table and scroll position in RecyclerView
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(KEY_ACTIVE_TABLE)) {
+                currentIndex = savedInstanceState.getInt(KEY_ACTIVE_TABLE);
+                switchCurrentTab(currentIndex);
+                Log.i(TAG, "savedInstanceState restored");
+            }
+            if (savedInstanceState.containsKey(KEY_CURRENT_SCROLLPOSITION)) {
+                int scrollPosition = savedInstanceState.getInt(KEY_CURRENT_SCROLLPOSITION);
+                sRestoredScrollPosition = scrollPosition;
+                Log.i(TAG, "savedInstanceState restored scrollposition: " + scrollPosition);
+            }
+        }
     }
 
     @SuppressLint({"NewApi", "LocalSuppress"})
@@ -308,7 +315,7 @@ public class MainActivity extends AppCompatActivity
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         //save current shown table and scroll position in RecyclerView
-        outState.putInt(KEY_ACTIVE_TABLE, sActiveTable);
+        outState.putInt(KEY_ACTIVE_TABLE, currentIndex);
         Log.i(TAG, "saved active table");
         int scroll = sCurrentScrollPosition;
         outState.putInt(KEY_CURRENT_SCROLLPOSITION, scroll);

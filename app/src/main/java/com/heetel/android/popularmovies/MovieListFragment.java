@@ -49,10 +49,11 @@ public class MovieListFragment extends Fragment
 
     private static int page = 1;
 
-    private int index, currentScrollPosition;
+    private int index, currentScrollPosition, restoredScroll;
     private ProgressBar loadingIndicator;
     private MovieAdapter adapter;
     private GridLayoutManager layoutManager;
+    private RecyclerView recyclerView;
 
 
     public static MovieListFragment newInstance(int index) {
@@ -68,18 +69,19 @@ public class MovieListFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         index = getArguments().getInt("index");
 
-        if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey("index")) {
-                int index = savedInstanceState.getInt("index");
-                Log.i(TAG, "restored index : " + index);
-            }
-        }
-
-        Log.i(TAG, "onCreateView() : " + index);
+        Log.e(TAG, "onCreateView() : " + index + " | id : " + this);
 
         View view = inflater.inflate(R.layout.fragment_popular, container, false);
         initView(view);
         loadFromDB();
+
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey("scroll")) {
+                restoredScroll = savedInstanceState.getInt("scroll");
+                Log.i(TAG, "restored scroll : " + currentScrollPosition);
+            }
+        }
+
         return view;
     }
 
@@ -94,13 +96,14 @@ public class MovieListFragment extends Fragment
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putInt("index", index);
+        outState.putInt("scroll", currentScrollPosition);
+        Log.i(TAG, "saved scroll : " + currentScrollPosition);
         super.onSaveInstanceState(outState);
     }
 
     private void initView(View view) {
         // initalize RecyclerView
-        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv_movies);
+        recyclerView = (RecyclerView) view.findViewById(R.id.rv_movies);
         //RecyclerView displays 2 or 3 Columns depending on devices orientation
         int columnCount = 2;
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
@@ -140,6 +143,7 @@ public class MovieListFragment extends Fragment
 
     @Override
     public void updatePosition(int position) {
+        Log.i(TAG, "scroll : " + position);
         currentScrollPosition = position;
     }
 
@@ -219,6 +223,7 @@ public class MovieListFragment extends Fragment
 
         @Override
         protected Cursor doInBackground(Uri... params) {
+            if (getActivity() == null) return null;
             switch (index) {
                 case 0:
                     return getActivity().getContentResolver().query(
@@ -254,10 +259,10 @@ public class MovieListFragment extends Fragment
         protected void onPostExecute(Cursor cursor) {
             loadingIndicator.setVisibility(View.INVISIBLE);
             adapter.setMovies(cursor);
-            /*if (sRestoredScrollPosition != 0) {
-                rvMovies.scrollToPosition(sRestoredScrollPosition);
-                sRestoredScrollPosition = 0;
-            }*/
+            if (restoredScroll != 0) {
+                recyclerView.scrollToPosition(restoredScroll);
+//                restoredScroll = 0;
+            }
             if (cursor != null && index < 2) {
                 //calculate page number to load from API on next load.
                 page = (cursor.getCount() / RESULTS_PER_PAGE);
