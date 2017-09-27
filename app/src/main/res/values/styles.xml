@@ -20,6 +20,7 @@
         <item name="android:windowEnterTransition">@transition/detail_enter</item>
         <item name="android:windowReturnTransition">@transition/detail_enter</item>
         <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
     </style>
     
     <style name="Toolbar" parent="Widget.AppCompat.Toolbar">
@@ -99,7 +100,15 @@
     </style>
 
     <style name="SearchItem" parent="Base.TextAppearance.AppCompat.SearchResult.Title">
+    </style>
 
+    <style name="SelectableItemTheme">
+        <item name="colorControlHighlight">#fff</item>
+    </style>
+
+    <style name="SelectableItemBackground">
+        <item name="android:theme">@style/SelectableItemTheme</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
     </style>
 
 </resources>

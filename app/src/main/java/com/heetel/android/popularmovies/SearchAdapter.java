@@ -7,9 +7,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.heetel.android.popularmovies.data.MovieContract;
+import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
 
 import java.util.ArrayList;
 
@@ -18,7 +21,7 @@ import java.util.ArrayList;
  *
  */
 
-public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchViewHolder> {
+class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchViewHolder> {
     private static final String TAG = SearchAdapter.class.getSimpleName();
 
     private int mNumberItems;
@@ -27,7 +30,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
 
     final private ListItemCallbackListener mOnClickListener;
 
-    public interface ListItemCallbackListener {
+    interface ListItemCallbackListener {
         void onListItemClick(int position);
     }
 
@@ -63,14 +66,16 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
 
     class SearchViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
-        TextView tvTitle, tvYear, tvOriginalTitle;
+        TextView tvTitle, tvYear;
+        ImageView ivPoster;
 
         SearchViewHolder(View itemView) {
             super(itemView);
 
             tvTitle = (TextView) itemView.findViewById(R.id.si_title);
             tvYear = (TextView) itemView.findViewById(R.id.si_year);
-            tvOriginalTitle = (TextView) itemView.findViewById(R.id.si_originaltitle);
+//            tvOriginalTitle = (TextView) itemView.findViewById(R.id.si_originaltitle);
+            ivPoster = (ImageView) itemView.findViewById(R.id.si_poster);
 
             itemView.setOnClickListener(this);
         }
@@ -79,13 +84,21 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
             String title;
             if (mData == null) title = "no data found";
             else title = mData.get(index).getAsString(MovieContract.MovieEntry.COLUMN_TITLE);
-            String year = mData.get(index).getAsString(MovieContract.MovieEntry.COLUMN_RELEASE_DATE);
-            if (year.length() > 4) year = year.substring(0, 4);
-            tvYear.setText(" · " + year);
+            String year = null;
+            if (mData != null) {
+                year = mData.get(index).getAsString(MovieContract.MovieEntry.COLUMN_RELEASE_DATE);
+            }
+            if (year != null && year.length() > 4) year = year.substring(0, 4);
+            tvYear.setText(year);
             tvTitle.setText(title);
 
-            String originalTitle = mData.get(index).getAsString(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE);
-//            tvOriginalTitle.setText(originalTitle);
+            String url = "https://image.tmdb.org/t/p/w500" +
+                    mData.get(index).getAsString(MovieContract.MovieEntry.COLUMN_POSTER_PATH);
+
+            Glide.with(mContext)
+                    .load(url)
+                    .transition(withCrossFade())
+                    .into(ivPoster);
         }
 
         @Override
@@ -96,7 +109,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
 
     void setData(ArrayList<ContentValues> data) {
         mData = data;
-        mNumberItems = data.size();
+        if (data != null) mNumberItems = data.size();
+        else mNumberItems = 0;
         Log.i(TAG, "setData: " + mNumberItems);
         notifyDataSetChanged();
     }

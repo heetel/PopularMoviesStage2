@@ -54,13 +54,6 @@
                     android:fitsSystemWindows="true"
                     app:parallaxVertical="1.0">
 
-                    <!--<TextView-->
-                        <!--android:layout_width="wrap_content"-->
-                        <!--android:layout_height="wrap_content"-->
-                        <!--android:layout_gravity="center"-->
-                        <!--android:text="My awesome title"-->
-                        <!--android:visibility="gone" />-->
-
                     <android.support.v7.widget.Toolbar
                         android:id="@+id/toolbar"
                         style="@style/ToolbarDetail"
@@ -111,21 +104,6 @@
                                 android:onClick="onClickFavourite"
                                 android:scaleType="centerCrop"
                                 app:srcCompat="@drawable/ic_star_border_blue" />
-
-                            <!--<Button-->
-                                <!--android:layout_width="wrap_content"-->
-                                <!--android:layout_height="wrap_content"-->
-                                <!--android:layout_alignStart="@+id/textViewTitle"-->
-                                <!--android:layout_below="@id/textViewTitle"-->
-                                <!--android:layout_marginStart="4dp"-->
-                                <!--android:layout_marginTop="48dp"-->
-                                <!--android:background="@color/button"-->
-                                <!--android:drawableLeft="@drawable/ic_play_circle_filled_black_24dp"-->
-                                <!--android:paddingEnd="4dp"-->
-                                <!--android:paddingStart="4dp"-->
-                                <!--android:text="   Watch Trailer"-->
-                                <!--android:textColor="@android:color/white"-->
-                                <!--android:visibility="gone" />-->
 
                             <LinearLayout
                                 android:layout_width="match_parent"

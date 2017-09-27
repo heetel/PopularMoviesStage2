@@ -105,35 +105,6 @@ public class DetailActivity extends AppCompatActivity
                 actionBar.setDisplayShowTitleEnabled(false);
             actionBar.setTitle(title);
         }
-
-
-
-
-
-
-    }
-
-    public static void setTranslucentStatusBar(Window window) {
-        if (window == null) return;
-        int sdkInt = Build.VERSION.SDK_INT;
-        if (sdkInt >= Build.VERSION_CODES.LOLLIPOP) {
-            setTranslucentStatusBarLollipop(window);
-        } else if (sdkInt >= Build.VERSION_CODES.KITKAT) {
-            setTranslucentStatusBarKiKat(window);
-        }
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private static void setTranslucentStatusBarLollipop(Window window) {
-        window.setStatusBarColor(
-                window.getContext()
-                        .getResources()
-                        .getColor(R.color.transparent) /* add here your translucent color code */);
-    }
-
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    private static void setTranslucentStatusBarKiKat(Window window) {
-        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
     }
 
     /**
@@ -512,6 +483,7 @@ public class DetailActivity extends AppCompatActivity
             Toast.makeText(this, getString(R.string.added_to_favourites),
                     Toast.LENGTH_SHORT).show();
             sIsFavourite = true;
+            if (mValues == null && mMovie != null) mValues = mMovie.getContentValues();
             Uri uri = getContentResolver().insert(MovieEntry.CONTENT_URI_FAVOURITES, mValues);
             Log.i(TAG, "Added to Favourites: " + uri);
         }

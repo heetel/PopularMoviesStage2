@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<set>
+<set xmlns:android="http://schemas.android.com/apk/res/android">
     <objectAnimator xmlns:android="http://schemas.android.com/apk/res/android"
         android:propertyName="alpha"
         android:valueType="floatType"
         android:valueFrom="1"
         android:valueTo="0"
-        android:duration="100"/>
+        android:duration="200"/>
+    <objectAnimator
+        android:propertyName="scaleX"
+        android:valueType="floatType"
+        android:valueFrom="1"
+        android:valueTo="0.85"
+        android:duration="300"/>
+    <objectAnimator
+        android:propertyName="scaleY"
+        android:valueType="floatType"
+        android:valueFrom="1"
+        android:valueTo="0.85"
+        android:duration="300"/>
 </set>

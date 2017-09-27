@@ -6,8 +6,8 @@
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/white"
-        android:fitsSystemWindows="true">
+        android:background="@color/colorBackground"
+        android:fitsSystemWindows="false">
 
         <android.support.design.widget.AppBarLayout
             android:id="@+id/appBarLayout"
@@ -43,6 +43,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
                     android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+                    android:layout_marginTop="@dimen/statusbarHeight"
                     app:layout_collapseMode="pin"/>
 
             </android.support.design.widget.CollapsingToolbarLayout>
@@ -54,7 +55,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:background="@color/colorBackground">
+            android:background="@color/colorBackground"
+            android:paddingBottom="?attr/actionBarSize">
 
             <RelativeLayout
                 android:layout_width="match_parent"

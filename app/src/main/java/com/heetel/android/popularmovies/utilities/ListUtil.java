@@ -23,7 +23,8 @@ public class ListUtil {
         return array;
     }
 
-    static String convertArrayToString(String[] array, String delimiter){
+    public static String convertArrayToString(String[] array, String delimiter){
+        if (array == null) return null;
         String str = "";
         for (int i = 0;i<array.length; i++) {
             str = str+array[i];

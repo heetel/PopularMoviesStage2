@@ -14,6 +14,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
+//import com.bumptech.glide.Glide;
+//import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
 
 import com.heetel.android.popularmovies.data.MovieContract.MovieEntry;
 
@@ -107,6 +109,12 @@ class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
                         "https://image.tmdb.org/t/p/w500" +
                         posterPath)
                         .into(ivThumbnail);
+
+//                Glide.with(context).load(
+//                        "https://image.tmdb.org/t/p/w500" +
+//                                posterPath)
+//                        .transition(withCrossFade())
+//                        .into(ivThumbnail);
             }
         }
 

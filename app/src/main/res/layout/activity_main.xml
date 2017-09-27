@@ -31,18 +31,26 @@
         </FrameLayout>
 
         <FrameLayout
+            android:id="@+id/search_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="?attr/actionBarSize"
+            android:background="#c8000000"
             android:visibility="gone">
 
-
+            <ProgressBar
+                android:id="@+id/search_loading_indicator"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:indeterminateTint="@android:color/white"
+                android:visibility="gone"/>
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/rv_search"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="gone" />
+                android:visibility="gone"
+                android:layout_marginTop="?attr/actionBarSize" />
 
             <ImageView
                 android:id="@+id/noSearchResults"

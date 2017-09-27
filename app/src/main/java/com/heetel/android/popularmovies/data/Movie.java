@@ -4,8 +4,11 @@ import android.content.ContentValues;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.heetel.android.popularmovies.utilities.ListUtil;
+
 /**
  * Created by Julian Heetel on 08.08.2017.
+ *
  */
 
 public class Movie implements Parcelable {
@@ -107,4 +110,24 @@ public class Movie implements Parcelable {
             return new Movie[size];
         }
     };
+
+    public ContentValues getContentValues() {
+        ContentValues mValues = new ContentValues();
+
+        mValues = new ContentValues();
+        mValues.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, movieId);
+        mValues.put(MovieContract.MovieEntry.COLUMN_TITLE, title);
+        mValues.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, releaseDate);
+        mValues.put(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE, voteAverage);
+        mValues.put(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE, originalTitle);
+        mValues.put(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH, backdropPath);
+        mValues.put(MovieContract.MovieEntry.COLUMN_POSTER_PATH, posterPath);
+        mValues.put(MovieContract.MovieEntry.COLUMN_OVERVIEW, overview);
+        mValues.put(MovieContract.MovieEntry.COLUMN_VIDEOS_NAMES, ListUtil.convertArrayToString(videosNames, ","));
+        mValues.put(MovieContract.MovieEntry.COLUMN_VIDEOS_KEYS, ListUtil.convertArrayToString(videosKeys, ","));
+        mValues.put(MovieContract.MovieEntry.COLUMN_REVIEWS_AUTHORS, ListUtil.convertArrayToString(reviewsAuthors, ","));
+        mValues.put(MovieContract.MovieEntry.COLUMN_REVIEWS_CONTENTS, ListUtil.convertArrayToString(reviewsContents, ","));
+
+        return mValues;
+    }
 }

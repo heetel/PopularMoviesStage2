@@ -18,6 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:contentDescription="@string/content_image_poster"/>
+        android:contentDescription="@string/content_image_poster"
+        android:background="?attr/selectableItemBackgroundBorderless"/>
 
 </FrameLayout>

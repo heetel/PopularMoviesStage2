@@ -209,6 +209,7 @@ public class MovieListFragment extends Fragment
     }
 
     public void refresh() {
+        Log.i(TAG, index + " refresh()");
         adapter.setMovies(null);
         page = 1;
         loadFromDB();
@@ -288,6 +289,12 @@ public class MovieListFragment extends Fragment
             @Override
             protected void onStartLoading() {
                 if (args == null) return;
+
+                if (index == 0) {
+                    NetworkUtils.setPopular();
+                } else if (index == 1) {
+                    NetworkUtils.setTopRated();
+                }
 
                 if (cachedMovies != null) {
                     deliverResult(cachedMovies);
