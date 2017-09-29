@@ -12,7 +12,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.heetel.android.popularmovies.data.MovieContract;
-import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
+//import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
 
 import java.util.ArrayList;
 
@@ -97,7 +97,8 @@ class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchViewHolder>
 
             Glide.with(mContext)
                     .load(url)
-                    .transition(withCrossFade())
+//                    .placeholder(R.drawable.placeholder_poster)
+//                    .transition(withCrossFade())
                     .into(ivPoster);
         }
 

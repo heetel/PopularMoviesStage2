@@ -160,4 +160,8 @@ class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
 
         notifyDataSetChanged();
     }
+
+    public Cursor getmCursor() {
+        return mCursor;
+    }
 }

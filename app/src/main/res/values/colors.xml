@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#B71C1C</color>
-    <color name="colorPrimaryDark">#941717</color>
+    <!--<color name="colorPrimary">#B71C1C</color>-->
+    <!--<color name="colorPrimaryDark">#941717</color>-->
+    <!--<color name="colorAccent">#B71C1C</color>-->
+    <color name="colorPrimary">#ffffff</color>
+    <color name="colorPrimaryDark">#c2c2c2</color>
     <color name="colorAccent">#B71C1C</color>
+    <color name="colorAccentDark">#941717</color>
     <color name="colorBackground">#181818</color>
     <color name="colorBackgroundtransparent">#d0212121</color>
     <color name="mColorLabel">#77aaff</color>
@@ -14,4 +18,5 @@
     <color name="color_tab_1">#1e1e1e</color>
     <color name="color_tab_2">#00150c</color>
     <color name="color_tab_3">#00041d</color>
+    <color name="fhjdsak">#00041d</color>
 </resources>

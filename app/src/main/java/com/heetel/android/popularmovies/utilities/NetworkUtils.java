@@ -158,7 +158,7 @@ public class NetworkUtils {
         URL videosUrl = buildVideosUrl(movieId);
         if (videosUrl == null) return null;
 
-        ContentValues details = null;
+        ContentValues details = new ContentValues();
 
         HttpURLConnection connection = (HttpURLConnection) videosUrl.openConnection();
         try {
@@ -367,7 +367,14 @@ public class NetworkUtils {
                 contentValues.put(MovieEntry.COLUMN_POSTER_PATH, posterPath);
                 contentValues.put(MovieEntry.COLUMN_BACKDROP_PATH, backdropPath);
 
-//                getDetailsFromMovieId(String.valueOf(movieID));
+                /*ContentValues details = null;
+
+                try {
+                    details = getDetailsFromMovieId(String.valueOf(movieID));
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }*/
 
                 movies.add(contentValues);
             }

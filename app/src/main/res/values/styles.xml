@@ -7,32 +7,47 @@
         <item name="android:toolbarStyle">@style/Toolbar</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
+        <!--<item name="android:windowSharedElementsUseOverlay">false</item>-->
+        <item name="android:actionOverflowButtonStyle">@style/OverflowButtonStyle</item>
+        <!--<item name="android:searchViewStyle">@style/SearchViewStyle</item>-->
+        <item name="android:homeAsUpIndicator">@drawable/ic_home</item>
+        <!--<item name="android:tint">@color/colorAccent</item>-->
         <!--<item name="android:fitsSystemWindows">true</item>-->
         <!--<item name="android:navigationBarColor">@android:color/transparent</item>-->
     </style>
 
     <style name="AppTheme.Detail" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:toolbarStyle">@style/Toolbar</item>
+        <item name="colorPrimary">@color/colorAccent</item>
+        <item name="colorPrimaryDark">@color/colorAccentDark</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+        <item name="android:toolbarStyle">@style/ToolbarDetail</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:windowEnterTransition">@transition/detail_enter</item>
         <item name="android:windowReturnTransition">@transition/detail_enter</item>
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
+        <!--<item name="android:windowSharedElementsUseOverlay">false</item>-->
     </style>
     
     <style name="Toolbar" parent="Widget.AppCompat.Toolbar">
         <item name="android:background">@color/colorPrimary</item>
         <item name="android:theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
         <item name="android:popupTheme">@style/Theme.AppCompat.Light</item>
-        <item name="android:elevation">4dp</item>
+        <item name="android:elevation">0dp</item>
+        <!--<item name="android:textColorSecondary">@color/colorAccent</item>-->
+        <!--<item name="android:textColor">@color/colorAccent</item>-->
+        <!--<item name="android:tint">@color/colorAccent</item>-->
+        <!--<item name="android:colorControlNormal">@color/colorAccent</item>-->
     </style>
 
     <style name="ToolbarDetail" parent="Widget.AppCompat.Toolbar">
         <item name="android:theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
         <item name="android:popupTheme">@style/Theme.AppCompat.Light</item>
+        <item name="android:colorPrimary">@color/colorAccent</item>
+    </style>
+
+    <style name="OverflowButtonStyle" parent="@style/Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:tint">@color/colorAccent</item>
     </style>
 
     <style name="TvLabel">
@@ -109,6 +124,33 @@
     <style name="SelectableItemBackground">
         <item name="android:theme">@style/SelectableItemTheme</item>
         <item name="android:background">?attr/selectableItemBackground</item>
+    </style>
+
+    <style name="sharedElement">
+        <item name="android:windowSharedElementsUseOverlay">false</item>
+    </style>
+
+    <style name="MovieFragmentStyle">
+        <!--<item name="android:title">#fff</item>-->
+    </style>
+
+    <style name="SearchViewStyle" parent="Widget.AppCompat.SearchView">
+    <!-- Background for the search query section (e.g. EditText) -->
+    <!--<item name="queryBackground">...</item>-->
+    <!-- Background for the actions section (e.g. voice, submit) -->
+    <!--<item name="submitBackground">...</item>-->
+    <!-- Close button icon -->
+    <item name="closeIcon">@color/colorAccent</item>
+    <!-- Search button icon -->
+    <!--<item name="searchIcon">...</item>-->
+    <!-- Go/commit button icon -->
+    <item name="goIcon">@color/colorAccent</item>
+    <!-- Voice search button icon -->
+    <!--<item name="voiceIcon">...</item>-->
+    <!-- Commit icon shown in the query suggestion row -->
+    <!--<item name="commitIcon">...</item>-->
+    <!-- Layout for query suggestion rows -->
+    <!--<item name="suggestionRowLayout">...</item>-->
     </style>
 
 </resources>

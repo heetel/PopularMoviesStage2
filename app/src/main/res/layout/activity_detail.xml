@@ -18,11 +18,12 @@
             android:fitsSystemWindows="false">
 
             <android.support.design.widget.CollapsingToolbarLayout
+                android:id="@+id/collapsingToolbarLayout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:layout_scrollFlags="scroll|exitUntilCollapsed"
                 android:fitsSystemWindows="true"
-                app:contentScrim="@color/colorPrimary"
+                app:contentScrim="@color/colorAccent"
                 app:expandedTitleMargin="24dp"
                 app:expandedTitleTextAppearance="@style/TvTitle">
 

@@ -27,6 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
+import com.heetel.android.popularmovies.data.Movie;
 import com.heetel.android.popularmovies.data.MovieContract;
 import com.heetel.android.popularmovies.utilities.ListUtil;
 import com.heetel.android.popularmovies.utilities.NetworkUtils;
@@ -123,11 +124,14 @@ public class MovieListFragment extends Fragment
     public void onListItemClick(String movieId, String title, int position) {
         Intent intent = new Intent(getActivity(), DetailActivity.class);
 
-        intent.putExtra(DetailActivity.INTENT_MOVIE_ID_KEY, movieId);
+//        intent.putExtra(DetailActivity.INTENT_MOVIE_ID_KEY, movieId);
+//        intent.putExtra(DetailActivity.INTENT_TABLE_KEY, index);
+//        intent.putExtra(DetailActivity.INTENT_MOVIE_TITLE_KEY, title);
 
-        intent.putExtra(DetailActivity.INTENT_TABLE_KEY, index);
-
-        intent.putExtra(DetailActivity.INTENT_MOVIE_TITLE_KEY, title);
+        Cursor cursor = adapter.getmCursor();
+        cursor.moveToPosition(position);
+        Movie movie = new Movie(cursor);
+        intent.putExtra(DetailActivity.INTENT_MOVIE_KEY, movie);
 
         ActivityOptionsCompat activityOptionsCompat =
                 ActivityOptionsCompat.makeSceneTransitionAnimation(

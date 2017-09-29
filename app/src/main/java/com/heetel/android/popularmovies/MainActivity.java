@@ -12,11 +12,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -29,6 +32,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -45,10 +49,7 @@ import com.heetel.android.popularmovies.utilities.SearchHelper;
 
 import java.util.ArrayList;
 
-// TODO: Aufräumen: BackgroundTasks jetzt in Fragment
-// TODO: Crash bei Rotation
-// TODO: Rotation: Fragment und Scrollposition wiederherstellen
-// TODO: Bug: Doppelte Fragment Instanzen
+// TODO: Rotation: Search --> Fragment
 
 /**
  * Created by Julian Heetel
@@ -71,9 +72,9 @@ public class MainActivity extends AppCompatActivity
 
     private final String TAG = MainActivity.class.getSimpleName();
 
-    private static final String QUICKSTART_POPULAR = "com.example.android.popularmovies.QUICKSTART_POPULAR";
-    private static final String QUICKSTART_TOP_RATED = "com.example.android.popularmovies.QUICKSTART_TOP_RATED";
-    private static final String QUICKSTART_FAVOURITES = "com.example.android.popularmovies.QUICKSTART_FAVOURITES";
+    private static final String QUICKSTART_POPULAR = "com.heetel.android.popularmovies.QUICKSTART_POPULAR";
+    private static final String QUICKSTART_TOP_RATED = "com.heetel.android.popularmovies.QUICKSTART_TOP_RATED";
+    private static final String QUICKSTART_FAVOURITES = "com.heetel.android.popularmovies.QUICKSTART_FAVOURITES";
 
     private RecyclerView rvSearch;
     private ProgressBar searchLoadingIndicator;
@@ -129,27 +130,6 @@ public class MainActivity extends AppCompatActivity
 
         initBottomNavigation();
 
-        //In case the App started from Nougat launcher shortcut, apply table name to query
-        String action = getIntent().getAction();
-        Log.i(TAG, "intent action: " + action);
-        switch (getIntent().getAction()) {
-            case QUICKSTART_POPULAR:
-//                setPopular();
-                switchCurrentFragment(0);
-                break;
-            case QUICKSTART_TOP_RATED:
-//                setTopRated();
-                switchCurrentFragment(1);
-                break;
-            case QUICKSTART_FAVOURITES:
-//                setFavourites();
-                switchCurrentFragment(2);
-                break;
-            default:
-//                setPopular();
-                switchCurrentFragment(0);
-        }
-
         //restore lastly shown table and scroll position in RecyclerView
         if (savedInstanceState != null) {
             if (savedInstanceState.containsKey(KEY_ACTIVE_TABLE)) {
@@ -165,6 +145,8 @@ public class MainActivity extends AppCompatActivity
         }
 
         favouritesUtil = new FavouritesUtil(this);
+
+        handleIntent(getIntent());
     }
 
     @Override
@@ -214,17 +196,6 @@ public class MainActivity extends AppCompatActivity
             @Override
             public boolean onTabSelected(int position, boolean wasSelected) {
                 Log.i(TAG, "onPositionChange() " + position + wasSelected);
-//                switch (position) {
-//                    case 0:
-//                        setPopular();
-//                        break;
-//                    case 1:
-//                        setTopRated();
-//                        break;
-//                    case 2:
-//                        setFavourites();
-//                        break;
-//                }
                 switchCurrentFragment(position);
                 return true;
             }
@@ -257,6 +228,10 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private void updateBottomNavigation() {
+        bottomNavigation.setCurrentItem(currentIndex);
+    }
+
     private void switchBottomNavigationColored(){
         if (currentIndex == 0) NetworkUtils.setPopular();
         else if (currentIndex == 1) NetworkUtils.setTopRated();
@@ -274,6 +249,16 @@ public class MainActivity extends AppCompatActivity
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         final SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
+        EditText searchEditText = (EditText) searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text);
+        searchEditText.setTextColor(getResources().getColor(R.color.colorAccent));
+        searchEditText.setHintTextColor(getResources().getColor(R.color.colorAccent));
+
+
+        final Drawable upArrow = getResources().getDrawable(R.drawable.abc_ic_ab_back_material);
+        upArrow.setColorFilter(getResources().getColor(R.color.colorAccent), PorterDuff.Mode.SRC_ATOP);
+        getSupportActionBar().setHomeAsUpIndicator(upArrow);
+
 //        searchView.setIconifiedByDefault(false);
         searchView.setOnQueryTextListener(this);
 //        searchView.setBackgroundColor(Color.WHITE);
@@ -542,5 +527,31 @@ public class MainActivity extends AppCompatActivity
                 .build();
 
         bottomNavigation.setNotification(notification, 2);
+    }
+
+    private void handleIntent(Intent intent) {
+
+        //In case the App started from Nougat launcher shortcut, apply table name to query
+        String action = intent.getAction();
+        Log.i(TAG, "handle intent action: " + action);
+        switch (getIntent().getAction()) {
+            case QUICKSTART_POPULAR:
+//                setPopular();
+                switchCurrentFragment(0);
+                break;
+            case QUICKSTART_TOP_RATED:
+//                setTopRated();
+                switchCurrentFragment(1);
+                break;
+            case QUICKSTART_FAVOURITES:
+//                setFavourites();
+//                Log.e(TAG, "switch favourites");
+                switchCurrentFragment(2);
+                break;
+            default:
+//                setPopular();
+//                switchCurrentFragment(0);
+        }
+        updateBottomNavigation();
     }
 }

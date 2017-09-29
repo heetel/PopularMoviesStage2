@@ -1,6 +1,7 @@
 package com.heetel.android.popularmovies.data;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -8,7 +9,6 @@ import com.heetel.android.popularmovies.utilities.ListUtil;
 
 /**
  * Created by Julian Heetel on 08.08.2017.
- *
  */
 
 public class Movie implements Parcelable {
@@ -80,6 +80,28 @@ public class Movie implements Parcelable {
         this.voteAverage = data.getAsString(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE);
         this.posterPath = data.getAsString(MovieContract.MovieEntry.COLUMN_POSTER_PATH);
         this.backdropPath = data.getAsString(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH);
+        this.videosKeys = ListUtil.convertStringToArray(data.getAsString(
+                MovieContract.MovieEntry.COLUMN_VIDEOS_KEYS), ListUtil.DELIMITER);
+        // TODO fertig machen
+    }
+
+    public Movie(Cursor cursor) {
+        this.title = cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE));
+        this.movieId = cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_MOVIE_ID));
+        this.releaseDate = cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE));
+        this.voteAverage = cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE));
+        this.originalTitle = cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE));
+        this.backdropPath = cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH));
+        this.posterPath = cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_PATH));
+        this.overview = cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_OVERVIEW));
+        this.videosNames = ListUtil.convertStringToArray(cursor.getString(
+                cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_VIDEOS_NAMES)), ListUtil.DELIMITER);
+        this.videosKeys = ListUtil.convertStringToArray(cursor.getString(
+                cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_VIDEOS_KEYS)), ListUtil.DELIMITER);
+        this.reviewsAuthors = ListUtil.convertStringToArray(cursor.getString(
+                cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_REVIEWS_AUTHORS)), ListUtil.DELIMITER);
+        this.reviewsContents = ListUtil.convertStringToArray(cursor.getString(
+                cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_REVIEWS_CONTENTS)), ListUtil.DELIMITER);
     }
 
     @Override

@@ -35,8 +35,16 @@ public class ListUtil {
         }
         return str;
     }
+    public static String convertArrayToString(String[] array) {
+        return convertArrayToString(array, DELIMITER);
+    }
+
     public static String[] convertStringToArray(String str, String delimiter){
+        if (str == null) return null;
         return str.split(delimiter);
+    }
+    public static String[] convertStringToArray(String str) {
+        return convertStringToArray(str, DELIMITER);
     }
 
 }
