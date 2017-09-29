@@ -159,6 +159,7 @@
                     android:contentDescription="@string/content_image_favourite"
                     android:onClick="onClickFavourite"
                     android:scaleType="centerCrop"
+                    android:tint="@color/colorAccent"
                     app:srcCompat="@drawable/ic_star_border_blue" />
 
                 <ProgressBar

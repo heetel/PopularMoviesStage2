@@ -2,12 +2,16 @@ package com.heetel.android.popularmovies;
 
 import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.databinding.DataBindingUtil;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -61,9 +65,6 @@ public class DetailActivity extends AppCompatActivity
     private final static String TAG = DetailActivity.class.getSimpleName();
 
     //Keys for Intent
-    public static final String INTENT_TABLE_KEY = "intent_table_key";
-    public static final String INTENT_MOVIE_ID_KEY = "intent_movie_id_key";
-    public static final String INTENT_MOVIE_TITLE_KEY = "intent_movie_title_key";
     public static final String INTENT_MOVIE_KEY = "intent_movie_key";
 
     //for AsyncTaskLoader
@@ -72,10 +73,9 @@ public class DetailActivity extends AppCompatActivity
     private static final String MOVIE_ID_KEY = "movie_id_key";
 
     private boolean sIsFavourite;
-    private ContentValues mValues;
-    private String mMovieId;
-    private String[] mVideoKeys;
     private Movie mMovie;
+    private int colorLightVibrant;
+    private Context mContext = this;
     ActivityDetailBinding mDataBinding;
 
     @Override
@@ -86,25 +86,6 @@ public class DetailActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 //        toolbar.setTitleTextColor(getResourceColor(R.color.colorAccent));
         setSupportActionBar(toolbar);
-
-
-//        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
-//            getWindow().setNavigationBarColor(getResourceColor(R.color.navigationBarColor));
-
-//        setTranslucentStatusBar(getWindow());
-
-        //get Title from Intent
-        /*Intent startIntent = getIntent();
-        String title = "";
-        if (startIntent.hasExtra(INTENT_MOVIE_TITLE_KEY)) {
-            title = startIntent.getStringExtra(INTENT_MOVIE_TITLE_KEY);
-            loadDataFromDB();
-        } else if (startIntent.hasExtra(INTENT_MOVIE_KEY)) {
-            mMovie = startIntent.getParcelableExtra(INTENT_MOVIE_KEY);
-            title = mMovie.title;
-            mMovieId = mMovie.movieId;
-            updateUI();
-        }*/
 
         if (getIntent().hasExtra(INTENT_MOVIE_KEY)) {
             mMovie = getIntent().getParcelableExtra(INTENT_MOVIE_KEY);
@@ -122,12 +103,6 @@ public class DetailActivity extends AppCompatActivity
         }
     }
 
-    private void setupColors() {
-        CollapsingToolbarLayout toolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.collapsingToolbarLayout);
-//        toolbarLayout.setContentScrimColor();
-
-    }
-
     /**
      * Load trailers and reviews from API
      */
@@ -135,46 +110,6 @@ public class DetailActivity extends AppCompatActivity
         Bundle bundle = new Bundle();
         bundle.putString(MOVIE_ID_KEY, mMovie.movieId);
         getSupportLoaderManager().initLoader(LOADER_ID, bundle, this);
-    }
-
-    /**
-     * Load data from ContentProvider
-     */
-    private void loadDataFromDB() {
-        Intent intent = getIntent();
-        if (!intent.hasExtra(INTENT_MOVIE_ID_KEY) || !intent.hasExtra(INTENT_TABLE_KEY))
-            return;
-        mMovieId = intent.getStringExtra(INTENT_MOVIE_ID_KEY);
-
-        int mTableKey = intent.getIntExtra(INTENT_TABLE_KEY, MainActivity.CODE_POPULAR);
-
-        Uri uri = MainActivity.getActiveTableUri(mTableKey);
-
-        new MovieTask().execute(uri);
-    }
-
-    private class MovieTask extends AsyncTask<Uri, Void, Cursor> {
-
-        @Override
-        protected Cursor doInBackground(Uri... params) {
-            if (params.length < 1)
-                throw new IllegalArgumentException("Missing ContentUri to load from");
-
-            return getContentResolver().query(
-                    params[0],
-                    null,
-                    MovieEntry.COLUMN_MOVIE_ID + "=?",
-                    new String[]{mMovieId},
-                    null
-            );
-
-        }
-
-        @Override
-        protected void onPostExecute(Cursor cursor) {
-            Log.i(TAG, "onPostExecute: cursor length: " + cursor.getCount());
-            updateUI(cursor);
-        }
     }
 
     private class CheckFavouritesTask extends AsyncTask<String, Void, Boolean> {
@@ -206,30 +141,30 @@ public class DetailActivity extends AppCompatActivity
 
         @Override
         protected void onPostExecute(Boolean isFavourite) {
+            // TODO: Tint Favourite Button
             if (isFavourite) {
                 sIsFavourite = true;
                 mDataBinding.imageButtonFavourite.setImageResource(R.drawable.ic_star_blue);
+//                mDataBinding.imageButtonFavourite.setImageDrawable(tintDrawable(mContext, R.drawable.ic_star_blue));
             }
+
+//            mDataBinding.imageButtonFavourite.setImageDrawable(tintDrawable(mContext, R.drawable.ic_star_border_blue));
+
         }
+    }
+
+    private Drawable tintDrawable(Context context, int drawableResource) {
+        Drawable mDrawable = ContextCompat.getDrawable(context, drawableResource);
+        mDrawable.setColorFilter(new PorterDuffColorFilter(colorLightVibrant, PorterDuff.Mode.MULTIPLY));
+        return mDrawable;
     }
 
     private void updateUI() {
         String urlBackdrop = "https://image.tmdb.org/t/p/w500" + mMovie.backdropPath;
-        /*Glide.with(this).load(
-                urlBackdrop)
-                .listener(GlidePalette.with(urlBackdrop)
-                        .use(GlidePalette.Profile.MUTED_DARK)
-                        .intoBackground(mDataBinding.date))
-//                .placeholder(R.drawable.placeholder_backdrop)
-                .into(mDataBinding.imageViewBackdrop);*/
 
         Glide.with(this).load(urlBackdrop)
                 .listener(GlidePalette.with(urlBackdrop)
                         .use(GlidePalette.Profile.MUTED_LIGHT)
-//                        .intoTextColor(mDataBinding.originalTitleLabel)
-//                        .intoTextColor(mDataBinding.voteLabel)
-//                        .intoTextColor(mDataBinding.dateLabel)
-//                        .intoTextColor(overViewLabel)
                         .intoCallBack(new GlidePalette.CallBack() {
                             @Override
                             public void onPaletteLoaded(Palette palette) {
@@ -238,13 +173,15 @@ public class DetailActivity extends AppCompatActivity
                                 int darkVibrant = palette.getDarkVibrantColor(getResourceColor(R.color.colorAccent));
 //                                mDataBinding.originalTitleLabel.setTextColor(palette.getLightMutedColor(Color.WHITE));
                                 mDataBinding.collapsingToolbarLayout.setContentScrimColor(darkVibrant);
-                                int lightMuted = palette.getLightVibrantColor(getResourceColor(R.color.mColorLabel));
-                                mDataBinding.originalTitleLabel.setTextColor(lightMuted);
-                                mDataBinding.voteLabel.setTextColor(lightMuted);
-                                mDataBinding.dateLabel.setTextColor(lightMuted);
-                                mDataBinding.overviewLabel.setTextColor(lightMuted);
-                                mDataBinding.videosLabel.setTextColor(lightMuted);
-                                mDataBinding.reviewsLabel.setTextColor(lightMuted);
+                                colorLightVibrant = palette.getLightVibrantColor(getResourceColor(R.color.mColorLabel));
+                                mDataBinding.originalTitleLabel.setTextColor(colorLightVibrant);
+                                mDataBinding.voteLabel.setTextColor(colorLightVibrant);
+                                mDataBinding.dateLabel.setTextColor(colorLightVibrant);
+                                mDataBinding.overviewLabel.setTextColor(colorLightVibrant);
+                                mDataBinding.videosLabel.setTextColor(colorLightVibrant);
+                                mDataBinding.reviewsLabel.setTextColor(colorLightVibrant);
+
+                                mDataBinding.imageButtonFavourite.setColorFilter(colorLightVibrant);
                             }
                         }))
                 .apply(new RequestOptions()
@@ -255,7 +192,7 @@ public class DetailActivity extends AppCompatActivity
                 "https://image.tmdb.org/t/p/w500" +
                         mMovie.posterPath)
                 .apply(new RequestOptions()
-                    .placeholder(R.drawable.placeholder_poster))
+                        .placeholder(R.drawable.placeholder_poster))
                 .into(mDataBinding.imageViewPoster);
 
 
@@ -269,6 +206,9 @@ public class DetailActivity extends AppCompatActivity
         } else {
             updateDetails();
         }
+
+        //Check if shown movie is a favourite and update the favourite ImageButton
+        new CheckFavouritesTask().execute(mMovie.movieId);
     }
 
     private void updateDetails() {
@@ -318,220 +258,7 @@ public class DetailActivity extends AppCompatActivity
         }
     }
 
-    private void updateDetails(ContentValues data) {
 
-        String videoNamesArray = data.getAsString(MovieEntry.COLUMN_VIDEOS_NAMES);
-        String[] mVideoNames = ListUtil.convertStringToArray(videoNamesArray, ",");
-        String videoKeysArray = data.getAsString(MovieEntry.COLUMN_VIDEOS_KEYS);
-        mVideoKeys = ListUtil.convertStringToArray(videoKeysArray, ",");
-
-        VideoItemBinding[] mVideoItems = new VideoItemBinding[]{
-                mDataBinding.videoItem1,
-                mDataBinding.videoItem2,
-                mDataBinding.videoItem3,
-                mDataBinding.videoItem4,
-                mDataBinding.videoItem5
-        };
-
-        mDataBinding.videosLabel.setVisibility(View.VISIBLE);
-
-        Log.i(TAG, "mVideoKeys length: " + mVideoKeys.length);
-        for (int i = 0; i < mVideoKeys.length && i < mVideoItems.length; i++) {
-            mVideoItems[i].videoItemFrameLayout.setVisibility(View.VISIBLE);
-            mVideoItems[i].textViewVideoName.setText("\t" + mVideoNames[i]);
-        }
-
-        if (TextUtils.isEmpty(mVideoKeys[0])) {
-            mVideoItems[0].videoItemFrameLayout.setVisibility(View.GONE);
-            mDataBinding.noVideos.setVisibility(View.VISIBLE);
-        }
-
-        String reviewAuthorsArray = data.getAsString(MovieEntry.COLUMN_REVIEWS_AUTHORS);
-        String[] reviewAuthors = ListUtil.convertStringToArray(reviewAuthorsArray, ListUtil.DELIMITER);
-        String reviewContensArray = data.getAsString(MovieEntry.COLUMN_REVIEWS_CONTENTS);
-        String[] reviewContents = ListUtil.convertStringToArray(reviewContensArray, ListUtil.DELIMITER);
-        Log.i(TAG, reviewAuthorsArray);
-
-        Log.i(TAG, "reviewAuthors length: " + reviewAuthors.length);
-        if (reviewAuthors.length > 0) {
-            mDataBinding.reviewsLabel.setVisibility(View.VISIBLE);
-            mDataBinding.reviews.setVisibility(View.VISIBLE);
-
-
-            String reviews = "";
-            for (int i = 0; i < reviewAuthors.length; i++) {
-                reviews += "<b>" + reviewAuthors[i] + ":  </b><br>" +
-                        reviewContents[i] + "<br><br>";
-            }
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                mDataBinding.reviews.setText(Html.fromHtml(reviews, Html.FROM_HTML_MODE_COMPACT));
-            } else {
-                //noinspection deprecation
-                mDataBinding.reviews.setText(Html.fromHtml(reviews));
-            }
-        }
-
-        if (TextUtils.isEmpty(reviewContents[0])) {
-            mDataBinding.reviews.setVisibility(View.GONE);
-            mDataBinding.noReviews.setVisibility(View.VISIBLE);
-        }
-    }
-
-    /**
-     * Update UI with data from cursor
-     * If tha data doesn't contain trailers and reviews, loadDetails() will be called.
-     *
-     * @param cursor data
-     */
-    private void updateUI(Cursor cursor) {
-        if (cursor == null) return;
-
-        cursor.moveToFirst();
-
-        String title = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_TITLE));
-        String releaseDate = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_RELEASE_DATE));
-        String vote = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_VOTE_AVERAGE));
-        String originalTitle = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_ORIGINAL_TITLE));
-        String backdropPath = cursor.getString(
-                cursor.getColumnIndex(MovieEntry.COLUMN_BACKDROP_PATH));
-        String posterPath = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_POSTER_PATH));
-        String overview = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_OVERVIEW));
-
-        String videoNamesArray = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_VIDEOS_NAMES));
-
-        if (videoNamesArray == null) {
-            loadDetails();
-        } else {
-            String[] mVideoNames = ListUtil.convertStringToArray(videoNamesArray, ",");
-            String videoKeysArray = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_VIDEOS_KEYS));
-            mVideoKeys = ListUtil.convertStringToArray(videoKeysArray, ",");
-
-            VideoItemBinding[] mVideoItems = new VideoItemBinding[]{
-                    mDataBinding.videoItem1,
-                    mDataBinding.videoItem2,
-                    mDataBinding.videoItem3,
-                    mDataBinding.videoItem4,
-                    mDataBinding.videoItem5
-            };
-
-            mDataBinding.videosLabel.setVisibility(View.VISIBLE);
-
-            Log.i(TAG, "mVideoKeys length: " + mVideoKeys.length);
-            for (int i = 0; i < mVideoKeys.length && i < mVideoItems.length; i++) {
-                mVideoItems[i].videoItemFrameLayout.setVisibility(View.VISIBLE);
-                mVideoItems[i].textViewVideoName.setText("\t" + mVideoNames[i]);
-            }
-
-            if (TextUtils.isEmpty(mVideoKeys[0])) {
-                mVideoItems[0].videoItemFrameLayout.setVisibility(View.GONE);
-                mDataBinding.noVideos.setVisibility(View.VISIBLE);
-            }
-
-            String reviewAuthorsArray = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_REVIEWS_AUTHORS));
-            String[] reviewAuthors = ListUtil.convertStringToArray(reviewAuthorsArray, ListUtil.DELIMITER);
-            String reviewContensArray = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_REVIEWS_CONTENTS));
-            String[] reviewContents = ListUtil.convertStringToArray(reviewContensArray, ListUtil.DELIMITER);
-            Log.i(TAG, reviewAuthorsArray);
-
-            Log.i(TAG, "reviewAuthors length: " + reviewAuthors.length);
-            if (reviewAuthors.length > 0) {
-                mDataBinding.reviewsLabel.setVisibility(View.VISIBLE);
-                mDataBinding.reviews.setVisibility(View.VISIBLE);
-
-
-                String reviews = "";
-                for (int i = 0; i < reviewAuthors.length; i++) {
-                    reviews += "<b>" + reviewAuthors[i] + ":  </b><br>" +
-                            reviewContents[i] + "<br><br>";
-                }
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    mDataBinding.reviews.setText(Html.fromHtml(reviews, Html.FROM_HTML_MODE_COMPACT));
-                } else {
-                    //noinspection deprecation
-                    mDataBinding.reviews.setText(Html.fromHtml(reviews));
-                }
-            }
-
-            if (TextUtils.isEmpty(reviewContents[0])) {
-                mDataBinding.reviews.setVisibility(View.GONE);
-                mDataBinding.noReviews.setVisibility(View.VISIBLE);
-            }
-        }
-
-        Log.i(TAG, "setTitle: " + title);
-        if (getSupportActionBar() != null)
-            getSupportActionBar().setTitle(title);
-        else {
-
-        }
-        if (mDataBinding.textViewTitle != null)
-            mDataBinding.textViewTitle.setText(title);
-        mDataBinding.originalTitle.setText(originalTitle);
-        mDataBinding.vote.setText(vote);
-        mDataBinding.date.setText(releaseDate);
-        mDataBinding.overview.setText(overview);
-
-        Picasso.with(this).load(
-                "https://image.tmdb.org/t/p/w500" +
-                        backdropPath)
-                .into(mDataBinding.imageViewBackdrop);
-
-        Picasso.with(this).load(
-                "https://image.tmdb.org/t/p/w500" +
-                        posterPath)
-                .into(mDataBinding.imageViewPoster);
-
-//        scaleBackdrop();
-
-        //Check if shown movie is a favourite and update the favourite ImageButton
-        new CheckFavouritesTask().execute(mMovieId);
-
-        //Apply custom font
-        if (mDataBinding.textViewTitle != null) {
-            Typeface font = Typeface.createFromAsset(getAssets(), "Ubuntu-L.ttf");
-            mDataBinding.textViewTitle.setTypeface(font);
-        }
-
-        //put data into ContentValues
-        mValues = new ContentValues();
-        mValues.put(MovieEntry.COLUMN_MOVIE_ID, mMovieId);
-        mValues.put(MovieEntry.COLUMN_TITLE, title);
-        mValues.put(MovieEntry.COLUMN_RELEASE_DATE, releaseDate);
-        mValues.put(MovieEntry.COLUMN_VOTE_AVERAGE, vote);
-        mValues.put(MovieEntry.COLUMN_ORIGINAL_TITLE, originalTitle);
-        mValues.put(MovieEntry.COLUMN_BACKDROP_PATH, backdropPath);
-        mValues.put(MovieEntry.COLUMN_POSTER_PATH, posterPath);
-        mValues.put(MovieEntry.COLUMN_OVERVIEW, overview);
-    }
-
-    /**
-     * Adjust height of backdrop ImageView depending on screen width
-     */
-//    private void scaleBackdrop() {
-//
-//        ViewGroup.LayoutParams params = mDataBinding.appBarLayout.getLayoutParams();
-//
-//        DisplayMetrics displaymetrics = new DisplayMetrics();
-//        getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
-//        int orientation = getResources().getConfiguration().orientation;
-//
-//        Log.i(TAG, "Orientation: " + orientation);
-//        int width;
-//        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-//            width = displaymetrics.widthPixels;
-//        }
-//        else {
-//            width = mDataBinding.appBarLayout.getMeasuredWidth();
-//        }
-//        Log.i(TAG, "width = " + width);
-//        int height = ((int) (width * 0.562));
-//        params.height = height;
-//        Log.i(TAG, "height = " + height);
-//
-//        mDataBinding.appBarLayout.setLayoutParams(params);
-//    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.detail, menu);
@@ -554,23 +281,23 @@ public class DetailActivity extends AppCompatActivity
 
     public void onClickVideo(View view) {
         Log.i(TAG, "View: " + view.getId());
-        if (mVideoKeys == null) return;
+        if (mMovie.videosKeys == null) return;
 
         switch (view.getId()) {
             case R.id.videoItem1:
-                watchYoutubeVideo(mVideoKeys[0]);
+                watchYoutubeVideo(mMovie.videosKeys[0]);
                 break;
             case R.id.videoItem2:
-                watchYoutubeVideo(mVideoKeys[1]);
+                watchYoutubeVideo(mMovie.videosKeys[1]);
                 break;
             case R.id.videoItem3:
-                watchYoutubeVideo(mVideoKeys[2]);
+                watchYoutubeVideo(mMovie.videosKeys[2]);
                 break;
             case R.id.videoItem4:
-                watchYoutubeVideo(mVideoKeys[3]);
+                watchYoutubeVideo(mMovie.videosKeys[3]);
                 break;
             case R.id.videoItem5:
-                watchYoutubeVideo(mVideoKeys[4]);
+                watchYoutubeVideo(mMovie.videosKeys[4]);
                 break;
         }
     }
@@ -584,7 +311,7 @@ public class DetailActivity extends AppCompatActivity
             int rows = getContentResolver().delete(
                     MovieEntry.CONTENT_URI_FAVOURITES,
                     MovieEntry.COLUMN_MOVIE_ID + "=?",
-                    new String[]{mMovieId}
+                    new String[]{mMovie.movieId}
             );
             Log.i(TAG, rows + " rows deleted");
         } else {
@@ -592,8 +319,9 @@ public class DetailActivity extends AppCompatActivity
             Toast.makeText(this, getString(R.string.added_to_favourites),
                     Toast.LENGTH_SHORT).show();
             sIsFavourite = true;
-            if (mValues == null && mMovie != null) mValues = mMovie.getContentValues();
-            Uri uri = getContentResolver().insert(MovieEntry.CONTENT_URI_FAVOURITES, mValues);
+
+            ContentValues contentValues = mMovie.getContentValues();
+            Uri uri = getContentResolver().insert(MovieEntry.CONTENT_URI_FAVOURITES, contentValues);
             Log.i(TAG, "Added to Favourites: " + uri);
         }
 
@@ -643,46 +371,41 @@ public class DetailActivity extends AppCompatActivity
         mDataBinding.pbDetailLoadingIndicator.setVisibility(View.INVISIBLE);
         if (data == null) return;
 
-        if (getIntent().hasExtra(INTENT_MOVIE_KEY)) {
-            updateDetails(data);
-        } else {
-            String where = "movie_id=?";
-            String[] selectionArgs = new String[]{mMovieId};
+        String where = "movie_id=?";
+        String[] selectionArgs = new String[]{mMovie.movieId};
 
-            int rowsPopular = getContentResolver().update(
-                    MovieEntry.CONTENT_URI,
-                    data,
-                    where,
-                    selectionArgs
-            );
-            int rowsTopRated = getContentResolver().update(
-                    MovieEntry.CONTENT_URI_TOP_RATED,
-                    data,
-                    where,
-                    selectionArgs
-            );
-            int rowsFavourites = getContentResolver().update(
-                    MovieEntry.CONTENT_URI_FAVOURITES,
-                    data,
-                    where,
-                    selectionArgs
-            );
-            Log.i(TAG, "rows updated popular: " + rowsPopular);
-            Log.i(TAG, "rows updated top rated: " + rowsTopRated);
-            Log.i(TAG, "rows updated favourites: " + rowsFavourites);
+        int rowsPopular = getContentResolver().update(
+                MovieEntry.CONTENT_URI,
+                data,
+                where,
+                selectionArgs
+        );
+        int rowsTopRated = getContentResolver().update(
+                MovieEntry.CONTENT_URI_TOP_RATED,
+                data,
+                where,
+                selectionArgs
+        );
+        int rowsFavourites = getContentResolver().update(
+                MovieEntry.CONTENT_URI_FAVOURITES,
+                data,
+                where,
+                selectionArgs
+        );
+        Log.i(TAG, "rows updated popular: " + rowsPopular);
+        Log.i(TAG, "rows updated top rated: " + rowsTopRated);
+        Log.i(TAG, "rows updated favourites: " + rowsFavourites);
 
-//            loadDataFromDB();
-            mMovie.videosKeys = ListUtil.convertStringToArray(
-                    data.getAsString(MovieEntry.COLUMN_VIDEOS_KEYS));
-            mMovie.videosNames = ListUtil.convertStringToArray(
-                    data.getAsString(MovieEntry.COLUMN_VIDEOS_NAMES));
-            mMovie.reviewsAuthors = ListUtil.convertStringToArray(
-                    data.getAsString(MovieEntry.COLUMN_REVIEWS_AUTHORS));
-            mMovie.reviewsContents = ListUtil.convertStringToArray(
-                    data.getAsString(MovieEntry.COLUMN_REVIEWS_CONTENTS));
+        mMovie.videosKeys = ListUtil.convertStringToArray(
+                data.getAsString(MovieEntry.COLUMN_VIDEOS_KEYS));
+        mMovie.videosNames = ListUtil.convertStringToArray(
+                data.getAsString(MovieEntry.COLUMN_VIDEOS_NAMES));
+        mMovie.reviewsAuthors = ListUtil.convertStringToArray(
+                data.getAsString(MovieEntry.COLUMN_REVIEWS_AUTHORS));
+        mMovie.reviewsContents = ListUtil.convertStringToArray(
+                data.getAsString(MovieEntry.COLUMN_REVIEWS_CONTENTS));
 
-            updateDetails();
-        }
+        updateDetails();
     }
 
     @Override
@@ -712,7 +435,7 @@ public class DetailActivity extends AppCompatActivity
 
     private void openInWeb() {
         String baseUrl = "https://www.themoviedb.org/movie/";
-        Uri uri = Uri.parse(baseUrl + mMovieId);
+        Uri uri = Uri.parse(baseUrl + mMovie.movieId);
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setData(uri);
         startActivity(i);

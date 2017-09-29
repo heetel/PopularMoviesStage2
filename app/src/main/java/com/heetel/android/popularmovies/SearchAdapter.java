@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.heetel.android.popularmovies.data.MovieContract;
 //import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
 
@@ -18,7 +19,6 @@ import java.util.ArrayList;
 
 /**
  * Created by Julian Heetel on 30.07.2017.
- *
  */
 
 class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchViewHolder> {
@@ -64,7 +64,7 @@ class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchViewHolder>
         return mNumberItems;
     }
 
-    class SearchViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    class SearchViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         TextView tvTitle, tvYear;
         ImageView ivPoster;
@@ -97,8 +97,9 @@ class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchViewHolder>
 
             Glide.with(mContext)
                     .load(url)
-//                    .placeholder(R.drawable.placeholder_poster)
-//                    .transition(withCrossFade())
+                    .apply(new RequestOptions()
+                            .placeholder(R.drawable.placeholder_poster)
+                    )
                     .into(ivPoster);
         }
 

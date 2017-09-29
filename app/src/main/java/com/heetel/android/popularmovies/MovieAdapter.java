@@ -108,6 +108,7 @@ class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
                 Picasso.with(context).load(
                         "https://image.tmdb.org/t/p/w500" +
                         posterPath)
+                        .placeholder(R.drawable.placeholder_poster)
                         .into(ivThumbnail);
 
 //                Glide.with(context).load(
