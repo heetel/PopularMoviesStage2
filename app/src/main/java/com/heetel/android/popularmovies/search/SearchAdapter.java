@@ -1,4 +1,4 @@
-package com.heetel.android.popularmovies;
+package com.heetel.android.popularmovies.search;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.heetel.android.popularmovies.R;
 import com.heetel.android.popularmovies.data.MovieContract;
 //import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
 
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 
 /**
  * Created by Julian Heetel on 30.07.2017.
+ *
  */
 
 class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchViewHolder> {

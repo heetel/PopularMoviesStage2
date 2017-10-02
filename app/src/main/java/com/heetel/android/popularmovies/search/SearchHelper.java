@@ -1,13 +1,14 @@
-package com.heetel.android.popularmovies.utilities;
+package com.heetel.android.popularmovies.search;
 
+import android.app.Activity;
+import android.app.LoaderManager;
+import android.content.AsyncTaskLoader;
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
+import android.content.Loader;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.Loader;
-import android.support.v4.app.LoaderManager;
+
+import com.heetel.android.popularmovies.utilities.NetworkUtils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -22,30 +23,30 @@ public class SearchHelper implements LoaderManager.LoaderCallbacks<ArrayList<Con
 
     private static final String KEY_QUERY = "key_query";
     private static final int LOADER_ID = 421;
+    private static final String TAG = SearchHelper.class.getSimpleName();
 
     private Context context;
     private String query;
     private SearchCallbacks searchCallbacks;
 
-    public SearchHelper(Context context, String query, SearchCallbacks searchCallbacks) {
+    SearchHelper(Context context, String query, SearchCallbacks searchCallbacks) {
         this.context = context;
         this.query = query;
         this.searchCallbacks = searchCallbacks;
     }
 
-    public interface SearchCallbacks {
+    interface SearchCallbacks {
         void onSearch(ArrayList<ContentValues> results);
     }
 
     public void search() {
         Bundle bundle = new Bundle();
         bundle.putString(KEY_QUERY, query);
-
-        Loader<Integer> queryLoader = ((FragmentActivity) context).getSupportLoaderManager().getLoader(LOADER_ID);
+        Loader<Integer> queryLoader = ((Activity) context).getLoaderManager().getLoader(LOADER_ID);
         if (queryLoader == null) {
-            ((FragmentActivity) context).getSupportLoaderManager().initLoader(LOADER_ID, bundle, this);
+            ((Activity) context).getLoaderManager().initLoader(LOADER_ID, bundle, this);
         } else {
-            ((FragmentActivity) context).getSupportLoaderManager().restartLoader(LOADER_ID, bundle, this);
+            ((Activity) context).getLoaderManager().restartLoader(LOADER_ID, bundle, this);
         }
     }
 
@@ -90,12 +91,12 @@ public class SearchHelper implements LoaderManager.LoaderCallbacks<ArrayList<Con
     }
 
     @Override
-    public void onLoadFinished(Loader<ArrayList<ContentValues>> loader, ArrayList<ContentValues> data) {
+    public void onLoadFinished(android.content.Loader<ArrayList<ContentValues>> loader, ArrayList<ContentValues> data) {
         searchCallbacks.onSearch(data);
     }
 
     @Override
-    public void onLoaderReset(Loader<ArrayList<ContentValues>> loader) {
+    public void onLoaderReset(android.content.Loader<ArrayList<ContentValues>> loader) {
 
     }
 
