@@ -6,15 +6,20 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.app.FragmentManager;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,6 +33,8 @@ import com.heetel.android.popularmovies.search.SearchFragment;
 import com.heetel.android.popularmovies.utilities.FavouritesUtil;
 import com.heetel.android.popularmovies.utilities.NetworkUtils;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
+
+import java.util.Locale;
 
 // DONE: Rotation: Search --> Fragment
 // TODO: Settings: Language
@@ -49,7 +56,8 @@ import com.miguelcatalan.materialsearchview.MaterialSearchView;
  */
 public class MainActivity extends AppCompatActivity
         implements
-        FavouritesUtil.FavouritesUtilCallback {
+        FavouritesUtil.FavouritesUtilCallback,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String KEY_SEARCH = "key-search";
     private final String TAG = MainActivity.class.getSimpleName();
@@ -81,6 +89,7 @@ public class MainActivity extends AppCompatActivity
     private String lastSearch;
 
     FavouritesUtil favouritesUtil;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +99,8 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        setupSharedPreferences();
+
         if (!isOnline()) showNoConnectionDialog();
 
         initSearchView();
@@ -98,7 +109,7 @@ public class MainActivity extends AppCompatActivity
 
         favouritesUtil = new FavouritesUtil(this);
 
-        handleIntent(getIntent());
+//        handleIntent(getIntent());
 
         //restore lastly shown table and scroll position in RecyclerView
         if (savedInstanceState != null) {
@@ -122,6 +133,12 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         favouritesUtil.checkCount();
         super.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -290,12 +307,15 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_refresh) {
-            clearDB();
+            clearDB(false);
             return true;
         } else if (item.getItemId() == R.id.action_remove_all_favourites) {
             showRemoveFavouritesDialog();
         } else if (item.getItemId() == R.id.action_switch_colored) {
             switchBottomNavigationColored();
+        } else if (item.getItemId() == R.id.action_settings) {
+            Intent startSettings = new Intent(this, SettingsActivity.class);
+            startActivity(startSettings);
         }
         return super.onOptionsItemSelected(item);
     }
@@ -304,11 +324,17 @@ public class MainActivity extends AppCompatActivity
      * Delete current table in ContentProvider
      * (Favourites won't be deleted.)
      */
-    private void clearDB() {
+    private void clearDB(boolean all) {
         Log.i(TAG, currentIndex + " clearDB()");
         //don't delete favourites
         if (currentIndex == 2) return;
         int rows = getContentResolver().delete(getActiveTableUri(currentIndex), null, null);
+        if (all) {
+            int otherIndex = currentIndex - 1;
+            if (otherIndex < 0) otherIndex = otherIndex * -1;
+            Log.e(TAG, "other Index : " + otherIndex);
+            rows += getContentResolver().delete(getActiveTableUri(otherIndex), null, null);
+        }
         movieFragments[currentIndex].refresh();
         Log.i(TAG, rows + " rows deleted");
     }
@@ -406,6 +432,10 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void handleIntent(Intent intent) {
+        if (intent.getAction() == null) {
+            Log.e(TAG, "null intent");
+            return;
+        }
 
         //In case the App started from Nougat launcher shortcut, apply table name to query
         String action = intent.getAction();
@@ -429,5 +459,36 @@ public class MainActivity extends AppCompatActivity
 //                switchCurrentFragment(0);
         }
         bottomNavigation.setCurrentItem(currentIndex);
+    }
+
+    public void setLocale() {
+        String defaultLang = Locale.getDefault().getCountry();
+        String lang = sharedPreferences.getString(getString(R.string.pref_key_language), defaultLang);
+        Log.e(TAG, "set language: " + lang);
+        Locale myLocale = new Locale(lang);
+        Resources res = getResources();
+        DisplayMetrics dm = res.getDisplayMetrics();
+        Configuration conf = res.getConfiguration();
+        conf.locale = myLocale;
+        res.updateConfiguration(conf, dm);
+        Intent refresh = new Intent(this, MainActivity.class);
+        startActivity(refresh);
+        finish();
+    }
+
+    private void setupSharedPreferences() {
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String lang = sharedPreferences.getString(getString(R.string.pref_key_language), "System default");
+        Log.e(TAG, "setupSharedPreferences: " + lang);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+//        setLocale();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        Log.e(TAG, "onSharedPreferenceChanged, key: " + key);
+        clearDB(true);
+        setLocale();
+
     }
 }

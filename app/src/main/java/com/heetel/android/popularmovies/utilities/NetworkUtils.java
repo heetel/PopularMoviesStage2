@@ -37,11 +37,10 @@ import java.util.Scanner;
 
 /**
  * These utilities will be used to communicate with the network.
- *
+ * <p>
  * Get json from following Uri
- *
+ * <p>
  * https://api.themoviedb.org/3/movie/popular?api_key=&language=en-US&page=1
- *
  */
 public class NetworkUtils {
 
@@ -63,7 +62,7 @@ public class NetworkUtils {
     private static String active_url = THEMOVIEDB_BASE_URL_POPULAR;
 
     private final static String PARAM_API = "api_key";
-    private final static String API = "";//insert your API Key here.
+    private final static String API = "1de56c3d596be90580d20262de5d3bdd";//insert your API Key here.
     private final static String LANGUAGE_KEY = "language";
     private final static String PAGE_KEY = "page";
     private final static String PARAM_QUERY = "query";
@@ -82,7 +81,7 @@ public class NetworkUtils {
 
     /**
      * Build URL to get videos:
-     *
+     * <p>
      * https://api.themoviedb.org/3/movie/{movie_id}/videos?api_key=<<api_key>>&language=en-US
      *
      * @param movieId movie id
@@ -108,7 +107,7 @@ public class NetworkUtils {
 
     /**
      * Build URL to get reviews:
-     *
+     * <p>
      * https://api.themoviedb.org/3/movie/{movie_id}/reviews?api_key=<<api_key>>&language=en-US
      *
      * @param movieId movie id
@@ -149,12 +148,13 @@ public class NetworkUtils {
 
     /**
      * Get ContentValues containing the movies details: videos and reviews
+     *
      * @param movieId movie id
      * @return ContentValues with videos and reviews
      * @throws IOException Error on requesting Html response
      */
     public static ContentValues getDetailsFromMovieId(String movieId)
-            throws IOException{
+            throws IOException {
         URL videosUrl = buildVideosUrl(movieId);
         if (videosUrl == null) return null;
 
@@ -201,6 +201,7 @@ public class NetworkUtils {
 
     /**
      * Parse data from a json into ContentValues
+     *
      * @param jsonString input json
      * @return ContentValues containing videos
      */
@@ -237,6 +238,7 @@ public class NetworkUtils {
 
     /**
      * Parse data from a json into ContentValues
+     *
      * @param jsonString input json
      * @return ContentValues containing reviews
      */
@@ -252,7 +254,7 @@ public class NetworkUtils {
                 JSONObject result = results.getJSONObject(i);
 
                 String author = result.getString("author");
-                Log.i(TAG, "author: " +author);
+                Log.i(TAG, "author: " + author);
                 String content = result.getString("content");
                 authors[i] = author;
                 contents[i] = content;
@@ -274,13 +276,15 @@ public class NetworkUtils {
      *
      * @return The URL to use to query the movie server.
      */
-    public static URL buildUrl(int page) {
+    public static URL buildUrl(int page, String language) {
 
         if (TextUtils.isEmpty(API))
             return null;
 
-        String language = getLanguage();
+        if (language == null || language.equals("System default"))
+            language = getLanguage();
         Log.i("lang: ", language);
+
         Uri builtUri = Uri.parse(active_url).buildUpon()
                 .appendQueryParameter(PARAM_API, API)
                 .appendQueryParameter(LANGUAGE_KEY, language)
@@ -298,6 +302,7 @@ public class NetworkUtils {
 
     /**
      * Get system language
+     *
      * @return system language
      */
     private static String getLanguage() {

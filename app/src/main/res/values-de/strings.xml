@@ -26,4 +26,5 @@
     <string name="remove">löschen</string>
     <string name="favourites_removed">Favouriten gelöscht</string>
     <string name="open_in_web">Im Web öffnen</string>
+    <string name="choose_language">Choose language</string>
 </resources>

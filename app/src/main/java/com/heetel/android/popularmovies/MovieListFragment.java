@@ -16,6 +16,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -70,7 +71,7 @@ public class MovieListFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         index = getArguments().getInt("index");
 
-        Log.e(TAG, "onCreateView() : " + index + " | id : " + this);
+        Log.i(TAG, "onCreateView() : " + index + " | id : " + this);
 
         View view = inflater.inflate(R.layout.fragment_popular, container, false);
         initView(view);
@@ -147,7 +148,7 @@ public class MovieListFragment extends Fragment
 
     @Override
     public void updatePosition(int position) {
-        Log.i(TAG, "scroll : " + position);
+//        Log.i(TAG, "scroll : " + position);
         currentScrollPosition = position;
     }
 
@@ -316,8 +317,11 @@ public class MovieListFragment extends Fragment
 
                 int page = args.getInt("page");
 
+                String language = PreferenceManager.getDefaultSharedPreferences(getActivity())
+                        .getString(getString(R.string.pref_key_language), null);
+
                 //build URL and get Response
-                URL movieRequestUrl = NetworkUtils.buildUrl(page);
+                URL movieRequestUrl = NetworkUtils.buildUrl(page, language);
                 try {
                     return NetworkUtils.getMoviesFromHttpUrl(movieRequestUrl);
                 } catch (Exception e) {

@@ -33,4 +33,10 @@
         android:orderInCategory="4"
         app:showAsAction="never"/>
 
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/settings"
+        android:orderInCategory="5"
+        app:showAsAction="never"/>
+
 </menu>
