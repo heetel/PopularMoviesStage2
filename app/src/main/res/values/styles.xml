@@ -52,10 +52,10 @@
 
     <style name="TvLabel">
         <item name="android:textSize">19sp</item>
-        <item name="android:textColor">@color/mColorLabel</item>
+        <item name="android:textColor">@android:color/white</item>
         <item name="android:paddingLeft">16dp</item>
         <item name="android:paddingTop">12dp</item>
-        <item name="android:fontFamily">sans-serif-light</item>
+        <!--<item name="android:fontFamily">@font/Dosis-Medium</item>-->
     </style>
 
     <style name="TvContent">
@@ -64,6 +64,7 @@
         <item name="android:paddingStart">16dp</item>
         <item name="android:paddingEnd">16dp</item>
         <item name="android:textIsSelectable">true</item>
+        <item name="android:fontFamily">sans-serif-light</item>
     </style>
 
     <style name="TvVideoName" parent="TvContent">

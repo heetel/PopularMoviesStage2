@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.databinding.DataBindingUtil;
@@ -12,6 +13,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -22,6 +24,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
+import android.support.v4.graphics.ColorUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.graphics.Palette;
@@ -44,8 +47,10 @@ import com.heetel.android.popularmovies.data.Movie;
 import com.heetel.android.popularmovies.data.MovieContract.MovieEntry;
 import com.heetel.android.popularmovies.databinding.ActivityDetailBinding;
 import com.heetel.android.popularmovies.databinding.VideoItemBinding;
+import com.heetel.android.popularmovies.utilities.ColorUtil;
 import com.heetel.android.popularmovies.utilities.ListUtil;
 import com.heetel.android.popularmovies.utilities.NetworkUtils;
+import com.heetel.android.popularmovies.view.ArcAngleAnimation;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -174,14 +179,36 @@ public class DetailActivity extends AppCompatActivity
 //                                mDataBinding.originalTitleLabel.setTextColor(palette.getLightMutedColor(Color.WHITE));
                                 mDataBinding.collapsingToolbarLayout.setContentScrimColor(darkVibrant);
                                 colorLightVibrant = palette.getLightVibrantColor(getResourceColor(R.color.mColorLabel));
-                                mDataBinding.originalTitleLabel.setTextColor(colorLightVibrant);
-                                mDataBinding.voteLabel.setTextColor(colorLightVibrant);
-                                mDataBinding.dateLabel.setTextColor(colorLightVibrant);
-                                mDataBinding.overviewLabel.setTextColor(colorLightVibrant);
-                                mDataBinding.videosLabel.setTextColor(colorLightVibrant);
-                                mDataBinding.reviewsLabel.setTextColor(colorLightVibrant);
+//                                mDataBinding.originalTitleLabel.setTextColor(colorLightVibrant);
+//                                mDataBinding.voteLabel.setTextColor(colorLightVibrant);
+//                                mDataBinding.dateLabel.setTextColor(colorLightVibrant);
+//                                mDataBinding.overviewLabel.setTextColor(colorLightVibrant);
+//                                mDataBinding.videosLabel.setTextColor(colorLightVibrant);
+//                                mDataBinding.reviewsLabel.setTextColor(colorLightVibrant);
+                                mDataBinding.ratingView.setColor(colorLightVibrant);
 
-                                mDataBinding.imageButtonFavourite.setColorFilter(colorLightVibrant);
+//                                mDataBinding.fab.setBackgroundTintList(ColorStateList.valueOf(darkVibrant));
+//                                mDataBinding.fab.setColorFilter(Color.WHITE);
+                                mDataBinding.fab.setColorFilter(darkVibrant);
+
+                                GradientDrawable gradientDrawableHeader = new GradientDrawable(
+                                        GradientDrawable.Orientation.TL_BR,
+                                        new int[]{Color.BLACK, darkVibrant});
+                                gradientDrawableHeader.setGradientType(GradientDrawable.RADIAL_GRADIENT);
+                                gradientDrawableHeader.setGradientCenter(0f, 0f);
+                                gradientDrawableHeader.setGradientRadius(3000f);
+                                mDataBinding.detailHeader.setBackground(gradientDrawableHeader);
+
+                                GradientDrawable gradientDrawableBody = new GradientDrawable(
+                                        GradientDrawable.Orientation.TL_BR,
+                                        new int[]{
+                                                ColorUtil.manipulateColor(darkVibrant, 0.8f),
+                                                ColorUtil.manipulateColor(darkVibrant, 0.3f)});
+                                gradientDrawableBody.setGradientType(GradientDrawable.RADIAL_GRADIENT);
+                                gradientDrawableBody.setGradientCenter(0f, 0f);
+                                gradientDrawableBody.setGradientRadius(1700f);
+                                mDataBinding.detailBody.setBackground(gradientDrawableBody);
+
                             }
                         }))
                 .apply(new RequestOptions()
@@ -200,6 +227,13 @@ public class DetailActivity extends AppCompatActivity
         mDataBinding.vote.setText(mMovie.voteAverage);
         mDataBinding.date.setText(mMovie.releaseDate);
         mDataBinding.overview.setText(mMovie.overview);
+
+        float voteF = Float.valueOf(mMovie.voteAverage);
+        int voteInt = ((int) (voteF * 10));
+        mDataBinding.ratingView.setRating(0);
+        ArcAngleAnimation animation = new ArcAngleAnimation(mDataBinding.ratingView, voteInt);
+        animation.setDuration(1500);
+        mDataBinding.ratingView.startAnimation(animation);
 
         if (mMovie.videosKeys == null) {
             loadDetails();
@@ -304,7 +338,7 @@ public class DetailActivity extends AppCompatActivity
 
     public void onClickFavourite(View view) {
         if (sIsFavourite) {
-            mDataBinding.imageButtonFavourite.setImageResource(R.drawable.ic_star_border_blue);
+            mDataBinding.fab.setImageResource(R.drawable.ic_star_border_blue);
             sIsFavourite = false;
             Toast.makeText(this, getString(R.string.removed_from_favourites),
                     Toast.LENGTH_SHORT).show();
@@ -315,7 +349,7 @@ public class DetailActivity extends AppCompatActivity
             );
             Log.i(TAG, rows + " rows deleted");
         } else {
-            mDataBinding.imageButtonFavourite.setImageResource(R.drawable.ic_star_blue);
+            mDataBinding.fab.setImageResource(R.drawable.ic_star_blue);
             Toast.makeText(this, getString(R.string.added_to_favourites),
                     Toast.LENGTH_SHORT).show();
             sIsFavourite = true;

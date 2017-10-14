@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity
 
         favouritesUtil = new FavouritesUtil(this);
 
-//        handleIntent(getIntent());
+        handleIntent(getIntent());
 
         //restore lastly shown table and scroll position in RecyclerView
         if (savedInstanceState != null) {
@@ -332,7 +332,7 @@ public class MainActivity extends AppCompatActivity
         if (all) {
             int otherIndex = currentIndex - 1;
             if (otherIndex < 0) otherIndex = otherIndex * -1;
-            Log.e(TAG, "other Index : " + otherIndex);
+//            Log.e(TAG, "other Index : " + otherIndex);
             rows += getContentResolver().delete(getActiveTableUri(otherIndex), null, null);
         }
         movieFragments[currentIndex].refresh();
@@ -433,13 +433,13 @@ public class MainActivity extends AppCompatActivity
 
     private void handleIntent(Intent intent) {
         if (intent.getAction() == null) {
-            Log.e(TAG, "null intent");
+//            Log.e(TAG, "null intent");
             return;
         }
 
         //In case the App started from Nougat launcher shortcut, apply table name to query
         String action = intent.getAction();
-        Log.i(TAG, "handle intent action: " + action);
+//        Log.e(TAG, "handle intent action: " + action);
         switch (getIntent().getAction()) {
             case QUICKSTART_POPULAR:
 //                setPopular();

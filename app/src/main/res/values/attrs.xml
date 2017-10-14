@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="RatingView">
+        <attr name="rating" format="integer"/>
+        <attr name="color" format="color"/>
+        <attr name="colorUnfilled" format="color"/>
+        <attr name="textSize" format="dimension"/>
+        <attr name="showTextInCircle" format="boolean"/>
+        <attr name="strokeWidth" format="dimension"/>
+        <!--<attr name="showText" format="boolean" />
+        <attr name="labelPosition" format="enum">
+            <enum name="left" value="0"/>
+            <enum name="right" value="1"/>
+        </attr>-->
+    </declare-styleable>
+</resources>
